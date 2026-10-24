@@ -1,4 +1,4 @@
-import { Practical } from '../types/index';
+import type { Practical } from '../types';
 
 export const PRACTICALS: Practical[] = [
   {

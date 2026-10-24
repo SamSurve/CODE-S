@@ -224,6 +224,7 @@ function CompilerContent() {
           {/* LEFT WINDOW: Monaco Code Editor */}
           <div className="w-full lg:w-1/2 h-1/2 lg:h-full flex flex-col min-h-0">
             <CodeEditor
+              key={activePractical?.id || 'custom'}
               code={code}
               onChange={setCode}
               language={language}
