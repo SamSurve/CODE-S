@@ -21,9 +21,9 @@ import { SupportedLanguage } from '../types';
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full min-h-[400px] flex flex-col items-center justify-center bg-zinc-950 text-zinc-500 font-mono text-xs gap-3">
+    <div className="w-full h-full min-h-[400px] flex flex-col items-center justify-center bg-[#121214] text-zinc-500 font-mono text-xs gap-3">
       <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-      <span>Initializing Code Editor environment...</span>
+      <span>Loading C/C++ Editor...</span>
     </div>
   )
 });
@@ -38,6 +38,7 @@ interface CodeEditorProps {
   isLoading: boolean;
   onUploadClick: () => void;
   activePracticalTitle?: string;
+  activePracticalExpNumber?: string;
 }
 
 export default function CodeEditor({
@@ -49,7 +50,8 @@ export default function CodeEditor({
   onRun,
   isLoading,
   onUploadClick,
-  activePracticalTitle
+  activePracticalTitle,
+  activePracticalExpNumber
 }: CodeEditorProps) {
   const [copied, setCopied] = useState(false);
   const [theme, setTheme] = useState<'vs-dark' | 'light'>('vs-dark');
@@ -88,18 +90,27 @@ export default function CodeEditor({
     URL.revokeObjectURL(url);
   };
 
+  const fileName = language === 'cpp' ? 'main.cpp' : 'main.c';
+
   return (
-    <div className="flex flex-col h-full bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden shadow-xl">
+    <div className="flex flex-col h-full bg-[#121214] border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
       {/* Editor Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-zinc-900 border-b border-zinc-800">
-        {/* Left: Language selector & Practical info */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-950 border border-zinc-800 text-xs">
-            <Code2 className="w-4 h-4 text-blue-400" />
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-[#18181b] border-b border-zinc-800 shrink-0">
+        {/* Left: Tab Name & Language Selector */}
+        <div className="flex items-center gap-2">
+          {/* File Tab (like in IDE screenshot) */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#121214] border border-zinc-700/80 text-xs font-mono text-zinc-100 font-semibold shadow-inner">
+            <FileCode className="w-3.5 h-3.5 text-blue-400" />
+            <span>{fileName}</span>
+          </div>
+
+          {/* Language Selector */}
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs">
+            <Code2 className="w-3.5 h-3.5 text-zinc-400" />
             <select
               value={language}
               onChange={(e) => onLanguageChange(e.target.value as SupportedLanguage)}
-              className="bg-transparent text-zinc-200 font-semibold focus:outline-none cursor-pointer text-xs"
+              className="bg-transparent text-zinc-300 font-medium focus:outline-none cursor-pointer text-xs"
             >
               <option value="c" className="bg-zinc-900 text-zinc-200">
                 C (GCC 9.2.0)
@@ -111,19 +122,18 @@ export default function CodeEditor({
           </div>
 
           {activePracticalTitle && (
-            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300 font-mono">
-              <FileCode className="w-3.5 h-3.5" />
-              <span className="truncate max-w-[200px]">{activePracticalTitle}</span>
-            </div>
+            <span className="hidden xl:inline-block text-[11px] text-zinc-400 font-sans truncate max-w-[180px]">
+              {activePracticalExpNumber}: {activePracticalTitle}
+            </span>
           )}
         </div>
 
-        {/* Right: Actions (Run, Reset, Copy, Download, Upload, Theme) */}
-        <div className="flex items-center gap-2">
+        {/* Right: Actions and Primary RUN Button (Matches reference screenshot) */}
+        <div className="flex items-center gap-1.5">
           {/* Upload Button */}
           <button
             onClick={onUploadClick}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors"
             title="Upload .c or .cpp file"
           >
             <Upload className="w-3.5 h-3.5 text-zinc-400" />
@@ -133,8 +143,8 @@ export default function CodeEditor({
           {/* Copy Code */}
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
-            title="Copy code to clipboard"
+            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors"
+            title="Copy code"
           >
             {copied ? (
               <>
@@ -152,40 +162,38 @@ export default function CodeEditor({
           {/* Download Code */}
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+            className="p-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
             title="Download source code"
           >
-            <Download className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="hidden sm:inline">Download</span>
+            <Download className="w-3.5 h-3.5" />
           </button>
 
           {/* Reset Code */}
           <button
             onClick={onReset}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
-            title="Reset to default code"
+            className="p-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
+            title="Reset code to PDF version"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="hidden sm:inline">Reset</span>
+            <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
-          {/* Theme Toggle */}
+          {/* Theme Switcher */}
           <button
             onClick={() => setTheme(theme === 'vs-dark' ? 'light' : 'vs-dark')}
-            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+            className="p-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
             title={`Switch to ${theme === 'vs-dark' ? 'Light' : 'Dark'} theme`}
           >
             {theme === 'vs-dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </button>
 
-          {/* Run Button (Primary) */}
+          {/* Prominent Blue RUN Button (matches the user's reference image!) */}
           <button
             onClick={onRun}
             disabled={isLoading}
-            className={`flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-lg shadow-lg transition-all active:scale-95 ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-md shadow-md transition-all active:scale-95 ${
               isLoading
                 ? 'bg-blue-600/70 text-blue-200 cursor-wait'
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30'
+                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30'
             }`}
           >
             {isLoading ? (
@@ -195,19 +203,16 @@ export default function CodeEditor({
               </>
             ) : (
               <>
+                <span>Run</span>
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Run Code</span>
-                <span className="hidden md:inline-block px-1 py-0.2 rounded bg-black/20 text-[10px] font-mono opacity-80">
-                  Ctrl+↵
-                </span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* Editor Body */}
-      <div className="relative flex-1 min-h-[380px] sm:min-h-[460px] bg-zinc-950">
+      {/* Editor Main Canvas */}
+      <div className="relative flex-1 min-h-[350px] bg-[#121214]">
         <MonacoEditor
           height="100%"
           language={language === 'cpp' ? 'cpp' : 'c'}
@@ -226,36 +231,33 @@ export default function CodeEditor({
             fontFamily: "var(--font-geist-mono), 'Fira Code', Consolas, monospace",
             renderWhitespace: 'selection',
             smoothScrolling: true,
-            padding: { top: 12, bottom: 12 }
+            padding: { top: 10, bottom: 10 }
           }}
         />
       </div>
 
-      {/* Editor Footer Status Bar */}
-      <div className="flex items-center justify-between px-4 py-1.5 bg-zinc-900 border-t border-zinc-800 text-[11px] text-zinc-500 font-mono">
-        <div className="flex items-center gap-4">
-          <span>{language.toUpperCase()} GCC</span>
-          <span>UTF-8</span>
-          <span>Tab: 4 spaces</span>
-        </div>
+      {/* Footer Info Bar */}
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#18181b] border-t border-zinc-800 text-[11px] text-zinc-500 font-mono shrink-0">
         <div className="flex items-center gap-3">
-          <span className="hidden sm:inline">Lines: {code.split('\n').length}</span>
-          <div className="flex items-center gap-1">
-            <span className="text-zinc-600">Font:</span>
-            <button
-              onClick={() => setFontSize(Math.max(12, fontSize - 1))}
-              className="px-1 text-zinc-400 hover:text-white"
-            >
-              -
-            </button>
-            <span className="text-zinc-300">{fontSize}px</span>
-            <button
-              onClick={() => setFontSize(Math.min(20, fontSize + 1))}
-              className="px-1 text-zinc-400 hover:text-white"
-            >
-              +
-            </button>
-          </div>
+          <span>{language.toUpperCase()} GCC</span>
+          <span>Lines: {code.split('\n').length}</span>
+          <span className="hidden sm:inline">UTF-8</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span>Zoom:</span>
+          <button
+            onClick={() => setFontSize(Math.max(12, fontSize - 1))}
+            className="px-1 text-zinc-400 hover:text-white"
+          >
+            -
+          </button>
+          <span className="text-zinc-300">{fontSize}px</span>
+          <button
+            onClick={() => setFontSize(Math.min(20, fontSize + 1))}
+            className="px-1 text-zinc-400 hover:text-white"
+          >
+            +
+          </button>
         </div>
       </div>
     </div>
