@@ -76,9 +76,82 @@ export async function POST(req: NextRequest) {
       headers['X-Auth-Token'] = authToken;
     }
 
+    // Terminal Echo Simulation:
+    // Prepend a hidden C/C++ shim that intercepts stdin using a fopencookie() stream.
+    // Each line read from stdin is automatically echoed to stdout (fd 1) with flushed output,
+    // exactly matching an interactive terminal session where typed inputs appear on the terminal.
+    let codeToSend = source_code;
+    if ((language_id === 50 || language_id === 54) && !source_code.includes('echo_cookie_funcs')) {
+      const fileName = language_id === 54 ? 'main.cpp' : 'main.c';
+      const shim = `
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
+static int orig_stdin_fd = -1;
+static char echo_line_buf[8192];
+static size_t echo_line_len = 0;
+static size_t echo_line_pos = 0;
+
+static ssize_t echo_cookie_read(void *cookie, char *buf, size_t size) {
+    if (size == 0) return 0;
+    if (echo_line_pos >= echo_line_len) {
+        echo_line_len = 0;
+        echo_line_pos = 0;
+        while (echo_line_len < sizeof(echo_line_buf) - 1) {
+            char ch;
+            ssize_t n = read(orig_stdin_fd, &ch, 1);
+            if (n <= 0) break;
+            echo_line_buf[echo_line_len++] = ch;
+            if (ch == '\\n') break;
+        }
+        if (echo_line_len == 0) return 0;
+        fflush(stdout);
+        write(1, echo_line_buf, echo_line_len);
+        if (echo_line_buf[echo_line_len - 1] != '\\n') {
+            write(1, "\\n", 1);
+        }
+    }
+    size_t avail = echo_line_len - echo_line_pos;
+    size_t to_copy = size < avail ? size : avail;
+    memcpy(buf, echo_line_buf + echo_line_pos, to_copy);
+    echo_line_pos += to_copy;
+    return to_copy;
+}
+
+static cookie_io_functions_t echo_cookie_funcs = {
+    echo_cookie_read,
+    NULL,
+    NULL,
+    NULL
+};
+
+__attribute__((constructor)) static void init_echo_stdin(void) {
+    orig_stdin_fd = dup(0);
+    FILE *new_in = fopencookie(NULL, "r", echo_cookie_funcs);
+    if (new_in) {
+        setvbuf(new_in, NULL, _IONBF, 0);
+        stdin = new_in;
+    }
+}
+#ifdef __cplusplus
+}
+#endif
+#line 1 "${fileName}"
+`;
+      codeToSend = shim + '\n' + source_code;
+    }
+
     // Base64 encode source code and stdin to ensure safe transfer across all charsets
     const judge0Payload = {
-      source_code: encodeBase64(source_code),
+      source_code: encodeBase64(codeToSend),
       language_id,
       stdin: stdin ? encodeBase64(stdin) : ''
     };

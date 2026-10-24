@@ -27,10 +27,10 @@ import { VIVA_DATA } from '../data/viva';
 export type OutputTab = 'output' | 'pdf_sample' | 'live_run' | 'stdin' | 'viva';
 
 /**
- * Normalizes terminal/program output for comparison:
+ * Normalizes terminal/program output for comparison per Task 3:
  * 1. Convert CRLF and CR to LF
- * 2. Collapse trailing whitespace on each line
- * 3. Trim leading/trailing whitespace & extra blank lines at end
+ * 2. Per line: trim the line, collapse any run of spaces/tabs into one space
+ * 3. Ignore trailing blank lines
  */
 export function normalizeOutput(str: string): string {
   if (!str) return '';
@@ -38,7 +38,7 @@ export function normalizeOutput(str: string): string {
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
     .split('\n')
-    .map((line) => line.trimEnd())
+    .map((line) => line.trim().replace(/[ \t]+/g, ' '))
     .join('\n')
     .trim();
 }

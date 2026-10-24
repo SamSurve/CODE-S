@@ -121,6 +121,40 @@ export const VIVA_DATA: Record<string, VivaPracticalData> = {
     ]
   },
 
+  'dijkstras-algorithm': {
+    aim: 'To find the shortest paths from a single source vertex to all other vertices in a weighted graph using Dijkstra\'s algorithm.',
+    howItWorks: [
+      'Initialize distance to source as 0 and all other vertices as infinity; visited set is empty.',
+      'Select the unvisited vertex u with the minimum current distance.',
+      'Mark vertex u as visited (finalized).',
+      'Relax each unvisited neighbor v: if dist[u] + cost(u, v) < dist[v], update dist[v].',
+      'Repeat until all reachable vertices are visited.'
+    ],
+    timeComplexity: {
+      best: 'O(V²) with adjacency matrix; O((V + E) log V) with min-heap',
+      average: 'O(V²) with matrix; O((V + E) log V) with min-heap',
+      worst: 'O(V²) with matrix; O((V + E) log V) with min-heap'
+    },
+    spaceComplexity: 'O(V) auxiliary space for distance and visited tracking (plus graph storage)',
+    vivaQuestions: [
+      {
+        question: 'Why does Dijkstra\'s algorithm fail with negative edge weights?',
+        answer: 'It assumes that once a vertex is marked visited its shortest path is settled, which is invalidated if a negative weight reduces it later.'
+      },
+      {
+        question: 'What algorithmic paradigm does Dijkstra\'s algorithm use?',
+        answer: 'The Greedy method, greedily choosing the unvisited node with minimum tentative distance.'
+      },
+      {
+        question: 'Which algorithm handles graphs with negative edge weights?',
+        answer: 'The Bellman-Ford algorithm (O(V · E)), which can also detect negative weight cycles.'
+      },
+      {
+        question: 'How does Dijkstra\'s algorithm differ from Prim\'s algorithm?',
+        answer: 'Dijkstra minimizes cumulative path distance from a single source, whereas Prim minimizes the weight of connecting to the spanning tree.'
+      }
+    ]
+  },
   'dijkstra': {
     aim: 'To find the shortest paths from a single source vertex to all other vertices in a weighted graph using Dijkstra\'s algorithm.',
     howItWorks: [
@@ -191,6 +225,41 @@ export const VIVA_DATA: Record<string, VivaPracticalData> = {
     ]
   },
 
+  'lcs': {
+    aim: 'To find the length and characters of the Longest Common Subsequence of two strings using Dynamic Programming.',
+    howItWorks: [
+      'Create a DP table L[m+1][n+1] initialized to 0 for strings X of length m and Y of length n.',
+      'Iterate through all pairs of characters X[i-1] and Y[j-1].',
+      'If X[i-1] == Y[j-1], characters match: set L[i][j] = 1 + L[i-1][j-1].',
+      'Else mismatch: take the maximum of excluding one character: max(L[i-1][j], L[i][j-1]).',
+      'L[m][n] gives the LCS length; backtrack through the table to reconstruct the LCS string.'
+    ],
+    timeComplexity: {
+      best: 'O(m · n)',
+      average: 'O(m · n)',
+      worst: 'O(m · n)'
+    },
+    spaceComplexity: 'O(m · n) for DP table (can be optimized to O(min(m, n)) for length only)',
+    vivaQuestions: [
+      {
+        question: 'What is the difference between a substring and a subsequence?',
+        answer: 'A substring requires contiguous characters, while a subsequence maintains relative order without needing to be contiguous.'
+      },
+      {
+        question: 'What two properties make LCS solvable with Dynamic Programming?',
+        answer: 'Optimal substructure (solution built from optimal subproblems) and overlapping subproblems.'
+      },
+      {
+        question: 'What is the time complexity of the naive brute-force LCS approach?',
+        answer: 'O(2^m · n), because a string of length m has 2^m distinct subsequences.'
+      },
+      {
+        question: 'Mention two practical applications of LCS.',
+        answer: 'File difference utilities (e.g. `git diff`) and bioinformatics for DNA/protein sequence alignment.'
+      }
+    ]
+  },
+
   'longest-common-subsequence': {
     aim: 'To find the length and characters of the Longest Common Subsequence of two strings using Dynamic Programming.',
     howItWorks: [
@@ -226,37 +295,36 @@ export const VIVA_DATA: Record<string, VivaPracticalData> = {
     ]
   },
 
-  'graph-coloring': {
-    aim: 'To color vertices of a graph with at most m colors such that no two adjacent vertices share the same color using Backtracking.',
+  'bfs-dfs': {
+    aim: 'To implement menu-driven Breadth First Search (BFS) and Depth First Search (DFS) traversals on a graph.',
     howItWorks: [
-      'Start with vertex 0 and attempt assigning colors from 1 to m.',
-      'For each color, call isSafe() to verify that no adjacent vertex currently has the same color.',
-      'If safe, assign the color and recursively advance to vertex k + 1.',
-      'If no color works for subsequent vertices, backtrack: reset current color to 0 and try the next color.',
-      'Print all valid colorings or report if no assignment is possible.'
+      'Represent the graph using an adjacency matrix a[20][20].',
+      'BFS (Queue based): Enqueue source vertex, mark visited. While queue is not empty, dequeue vertex v, print it, and enqueue all unvisited adjacent neighbors.',
+      'DFS (Recursive): Mark current vertex v as visited and print it. For every unvisited neighbor i adjacent to v, recursively call dfs(i).',
+      'Provide an interactive loop allowing users to test BFS and DFS from any valid source vertex.'
     ],
     timeComplexity: {
-      best: 'O(V) (if initial assignment immediately succeeds)',
-      average: 'O(m^V)',
-      worst: 'O(m^V) (exponential search tree exploring up to m colors for V vertices)'
+      best: 'O(V + E)',
+      average: 'O(V²) with adjacency matrix',
+      worst: 'O(V²) with adjacency matrix'
     },
-    spaceComplexity: 'O(V) auxiliary space for color array and recursion call stack',
+    spaceComplexity: 'O(V) for visited array, queue, and recursion call stack',
     vivaQuestions: [
       {
-        question: 'What is the chromatic number of a graph?',
-        answer: 'The minimum number of colors required to color the graph such that no two adjacent vertices share the same color.'
+        question: 'What data structures do BFS and DFS use?',
+        answer: 'BFS uses a Queue (FIFO), while DFS uses a Stack (LIFO or recursion call stack).'
       },
       {
-        question: 'What does the Four Color Theorem state?',
-        answer: 'Any planar graph can be colored with at most 4 colors such that no adjacent regions share the same color.'
+        question: 'Which traversal is guaranteed to find the shortest path in an unweighted graph?',
+        answer: 'BFS (Breadth First Search) always explores vertices level by level, finding the path with minimum edges.'
       },
       {
-        question: 'Is determining graph m-colorability NP-Complete?',
-        answer: 'Yes, determining whether a general graph can be colored using m >= 3 colors is NP-Complete.'
+        question: 'What is the time complexity of BFS and DFS when using an adjacency list vs adjacency matrix?',
+        answer: 'O(V + E) when using an adjacency list; O(V²) when using an adjacency matrix.'
       },
       {
-        question: 'What does the isSafe() check verify?',
-        answer: 'It checks the graph\'s adjacency matrix to ensure no adjacent vertex already has the proposed color.'
+        question: 'How can DFS be used to detect a cycle in a directed graph?',
+        answer: 'If DFS encounters a back edge (an edge pointing to an ancestor currently in the recursion stack), a cycle exists.'
       }
     ]
   },
@@ -362,6 +430,41 @@ export const VIVA_DATA: Record<string, VivaPracticalData> = {
       {
         question: 'Does Naive String Matching require any pre-processing time?',
         answer: 'No, pre-processing time is 0 and auxiliary space is O(1).'
+      }
+    ]
+  },
+
+  'min-max': {
+    aim: 'To find the minimum and maximum elements in an array using the Divide and Conquer approach.',
+    howItWorks: [
+      'Base Case 1: If array has 1 element (low == high), both min and max equal that single element.',
+      'Base Case 2: If array has 2 elements, compare them once to assign min and max in 1 comparison.',
+      'Divide: Split the array at mid = (low + high) / 2 into left and right halves.',
+      'Conquer: Recursively compute (min1, max1) for left half and (min2, max2) for right half.',
+      'Combine: Set min = min(min1, min2) and max = max(max1, max2).'
+    ],
+    timeComplexity: {
+      best: '3n/2 - 2 comparisons ≈ O(n)',
+      average: '3n/2 - 2 comparisons ≈ O(n)',
+      worst: '3n/2 - 2 comparisons ≈ O(n)'
+    },
+    spaceComplexity: 'O(log n) auxiliary stack space for recursion',
+    vivaQuestions: [
+      {
+        question: 'How many comparisons does Divide & Conquer use compared to a linear scan?',
+        answer: 'It uses 3n/2 - 2 comparisons, whereas a naive linear scan uses 2n - 2 comparisons in the worst case.'
+      },
+      {
+        question: 'What is the recurrence relation for this algorithm?',
+        answer: 'T(n) = 2T(n/2) + 2 for n > 2 with base cases T(1) = 0 and T(2) = 1.'
+      },
+      {
+        question: 'Why does it require exactly 3n/2 - 2 comparisons when n is a power of 2?',
+        answer: 'Pairs of elements are compared in n/2 comparisons, then winners compete for max (n/2 - 1) and losers for min (n/2 - 1).'
+      },
+      {
+        question: 'Can any comparison-based algorithm find min and max in less than Ω(n) time on an unsorted array?',
+        answer: 'No, every element must be examined at least once to determine if it is the extremum, giving a lower bound of Ω(n).'
       }
     ]
   },
