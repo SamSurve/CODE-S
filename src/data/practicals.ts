@@ -829,7 +829,7 @@ export const PARADIGMS = [
 export const DEFAULT_C_STARTER = `#include <stdio.h>
 
 int main() {
-    printf("Hello from AOA Practical Compiler!\\n");
+    printf("Hello from Online Compiler!\\n");
     return 0;
 }
 `;
@@ -838,7 +838,7 @@ export const DEFAULT_CPP_STARTER = `#include <iostream>
 using namespace std;
 
 int main() {
-    cout << "Hello from AOA Practical Compiler (C++)!" << endl;
+    cout << "Hello from Online Compiler (C++)!" << endl;
     return 0;
 }
 `;

@@ -13,17 +13,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'AOA Practical Codes — Write. Run. Learn.',
+  title: 'Online Compiler',
   description:
-    'An interactive AOA (Analysis of Algorithms) practical library and online sandboxed compiler to write, upload, edit, and execute C and C++ programs.',
+    'An interactive online sandboxed compiler to write, upload, edit, and execute C and C++ programs.',
   keywords: [
-    'AOA',
-    'Analysis of Algorithms',
+    'Online Compiler',
     'C Compiler',
     'C++ Compiler',
     'Online IDE',
     'Judge0',
-    'Engineering Practicals',
     'Algorithms'
   ],
   authors: [{ name: 'Siddhant Surve' }]

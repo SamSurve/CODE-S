@@ -117,7 +117,7 @@ export default function RightOutputPanel({
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-[#18181b] border-b border-zinc-800 shrink-0">
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1 bg-zinc-950/80 p-0.5 rounded-lg border border-zinc-800/80 text-xs">
-          {/* Tab 1: Sample Output from PDF (Default when practical is selected) */}
+          {/* Tab 1: Expected Output (Default when practical is selected) */}
           <button
             type="button"
             onClick={() => onTabChange('pdf_sample')}
@@ -128,7 +128,7 @@ export default function RightOutputPanel({
             }`}
           >
             <FileText className="w-3.5 h-3.5 text-blue-300" />
-            <span>Sample Output from PDF</span>
+            <span>Expected Output</span>
           </button>
 
           {/* Tab 2: Live Execution Output */}
@@ -212,30 +212,16 @@ export default function RightOutputPanel({
       {/* Main Content Area */}
       <div className="relative flex-1 p-4 font-mono text-xs overflow-y-auto leading-relaxed select-text bg-[#0d0d10]">
         {/* ========================================================================= */}
-        {/* TAB 1: Sample Output from PDF (Immediately shown on practical selection) */}
+        {/* TAB 1: Expected Output (Immediately shown on practical selection)        */}
         {/* ========================================================================= */}
         {activeTab === 'pdf_sample' && (
-          <div className="space-y-3">
-            {/* Context Banner */}
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-blue-950/20 border border-blue-900/40 text-blue-300 text-[11px] font-sans">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />
-                <span className="font-semibold text-blue-200">
-                  Sample Output from PDF — {practicalExpNumber ? `${practicalExpNumber}: ` : ''}{practicalTitle || 'Practical'}
-                </span>
-              </div>
-              <span className="text-[10px] text-blue-400/80 font-mono">
-                Verified lab record
-              </span>
-            </div>
-
-            {/* Preserved PDF Output */}
-            <pre className="p-3.5 rounded-lg bg-zinc-950/80 border border-zinc-800/80 text-emerald-300/90 whitespace-pre-wrap break-words selection:bg-emerald-500/20 leading-relaxed font-mono text-[12px]">
-              {sampleOutput || '(No sample output available for this practical)'}
+          <div className="space-y-2 h-full flex flex-col">
+            {/* Output Box */}
+            <pre className="flex-1 p-3.5 rounded-lg bg-zinc-950/80 border border-zinc-800/80 text-emerald-300/90 whitespace-pre-wrap break-words selection:bg-emerald-500/20 leading-relaxed font-mono text-[12px] overflow-auto">
+              {sampleOutput || '(No expected output available for this practical)'}
             </pre>
 
-            <div className="flex items-center justify-between text-[11px] text-zinc-500 font-sans pt-1">
-              <span>This output is extracted directly from the student PDF lab manual.</span>
+            <div className="flex items-center justify-end text-[11px] text-zinc-500 font-sans pt-0.5">
               <span className="font-mono text-blue-400/80">Press &quot;Run ▶&quot; to test live</span>
             </div>
           </div>
@@ -253,7 +239,7 @@ export default function RightOutputPanel({
                   Compiling &amp; Executing in GCC Sandbox...
                 </p>
                 <p className="text-[11px] text-zinc-500 font-sans">
-                  Using preloaded PDF sample input automatically.
+                  Using preloaded sample input automatically.
                 </p>
               </div>
             ) : !result ? (
@@ -327,7 +313,7 @@ export default function RightOutputPanel({
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span>
                   {sampleInput
-                    ? 'Sample input automatically loaded from PDF. You may edit it freely.'
+                    ? 'Sample input automatically loaded. You may edit it freely.'
                     : 'No standard input required for this program.'}
                 </span>
               </div>
@@ -337,7 +323,7 @@ export default function RightOutputPanel({
                   onClick={() => onStdinChange(sampleInput)}
                   className="text-[11px] text-amber-400 hover:underline font-mono"
                 >
-                  Reset to PDF Sample
+                  Reset to Sample Input
                 </button>
               )}
             </div>
@@ -363,7 +349,7 @@ export default function RightOutputPanel({
           <span>{result?.engine || 'Judge0 CE Sandboxed Engine'}</span>
         </div>
         <div className="flex items-center gap-3">
-          <span>Active: {activeTab === 'pdf_sample' ? 'Sample Output (PDF)' : activeTab === 'live_run' ? 'Live Execution' : 'Standard Input'}</span>
+          <span>Active: {activeTab === 'pdf_sample' ? 'Expected Output' : activeTab === 'live_run' ? 'Live Execution' : 'Standard Input'}</span>
         </div>
       </div>
     </div>

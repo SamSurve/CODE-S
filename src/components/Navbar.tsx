@@ -92,10 +92,7 @@ export default function Navbar() {
             </div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-sm tracking-tight text-white group-hover:text-blue-400 transition-colors">
-                AOA Practical Codes
-              </span>
-              <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                Write · Run · Learn
+                Online Compiler
               </span>
             </div>
           </Link>
@@ -129,7 +126,7 @@ export default function Navbar() {
                 <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl shadow-black/80 z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-2 border-b border-zinc-800/80 bg-zinc-950/70 flex items-center justify-between">
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
-                      Select AOA Practical (1–11)
+                      Select Practical (1–11)
                     </span>
                     <span className="text-[10px] text-zinc-500 font-mono">11 Experiments</span>
                   </div>

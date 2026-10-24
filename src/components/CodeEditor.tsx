@@ -418,7 +418,7 @@ export default function CodeEditor({
               requestAnimationFrame(resetScroll);
             }}
             className="p-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
-            title="Reset code to original PDF version"
+            title="Reset code to original version"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>

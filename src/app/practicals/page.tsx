@@ -64,7 +64,7 @@ export default function PracticalsPage() {
               <span className="text-xs text-zinc-500">11 Full Practicals</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              AOA Practical Library
+              Algorithm Practical Library
             </h1>
             <p className="text-sm text-zinc-400 mt-1 max-w-2xl leading-relaxed">
               Explore Analysis of Algorithms experiments with documented aims, step-by-step algorithms,

@@ -241,7 +241,7 @@ export default function PracticalDetailModal({
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800 bg-zinc-950/70">
           <span className="text-xs text-zinc-500 hidden sm:inline">
-            Preserved directly from college syllabus AOA record
+            Verified sample test case
           </span>
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
             <button
