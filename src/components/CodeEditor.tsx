@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Play,
   RotateCcw,
@@ -28,8 +28,87 @@ interface CodeEditorProps {
   activePracticalExpNumber?: string;
 }
 
+// Strict shared metrics across Gutter, Highlight layer, and Textarea
+const FONT_FAMILY =
+  'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
 const PADDING_TOP = 8;
 const PADDING_BOTTOM = 16;
+const PADDING_X = 12;
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Syntax highlighter matching VS Code Dark+ theme
+function highlightCCode(code: string): string {
+  if (!code) return '';
+
+  const regex =
+    /(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|(#\s*[a-zA-Z_]\w*(?:\s*<[^>]+>|\s*"(?:\\.|[^"\\])*")?)|(\b(?:int|char|void|float|double|long|short|unsigned|signed|const|static|typedef|struct|sizeof|Node|bool|auto)\b)|(\b(?:if|else|for|while|do|return|break|continue|switch|case|default|goto)\b)|(\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?[fFulL]*\b)|(\b[a-zA-Z_]\w*\s*(?=\())|(\b[a-zA-Z_]\w*\b)|([{}()[\];,.<>+\-*\/%&|^!=?:~]+)/g;
+
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let result = '';
+
+  while ((match = regex.exec(code)) !== null) {
+    if (match.index > lastIndex) {
+      result += escapeHtml(code.substring(lastIndex, match.index));
+    }
+
+    const [
+      full,
+      comment,
+      stringLit,
+      preproc,
+      typeKw,
+      controlKw,
+      numberLit,
+      funcCall,
+      identifier,
+      operator
+    ] = match;
+
+    if (comment) {
+      result += `<span style="color:#6a9955;font-style:italic;">${escapeHtml(comment)}</span>`;
+    } else if (stringLit) {
+      result += `<span style="color:#ce9178;">${escapeHtml(stringLit)}</span>`;
+    } else if (preproc) {
+      result += `<span style="color:#c586c0;font-weight:600;">${escapeHtml(preproc)}</span>`;
+    } else if (typeKw) {
+      result += `<span style="color:#569cd6;font-weight:600;">${escapeHtml(typeKw)}</span>`;
+    } else if (controlKw) {
+      result += `<span style="color:#c586c0;font-weight:600;">${escapeHtml(controlKw)}</span>`;
+    } else if (numberLit) {
+      result += `<span style="color:#b5cea8;">${escapeHtml(numberLit)}</span>`;
+    } else if (funcCall) {
+      result += `<span style="color:#dcdcaa;">${escapeHtml(funcCall)}</span>`;
+    } else if (identifier) {
+      result += `<span style="color:#9cdcfe;">${escapeHtml(identifier)}</span>`;
+    } else if (operator) {
+      result += `<span style="color:#d4d4d4;">${escapeHtml(operator)}</span>`;
+    } else {
+      result += escapeHtml(full);
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < code.length) {
+    result += escapeHtml(code.substring(lastIndex));
+  }
+
+  // Preserve trailing newline so trailing blank line does not collapse
+  if (code.endsWith('\n')) {
+    result += ' ';
+  }
+
+  return result;
+}
 
 export default function CodeEditor({
   code,
@@ -50,15 +129,44 @@ export default function CodeEditor({
 
   const editorCanvasRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const highlightRef = useRef<HTMLPreElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
   const isAutoFitRef = useRef<boolean>(true);
 
-  // Keep isAutoFitRef in sync with state
   useEffect(() => {
     isAutoFitRef.current = isAutoFit;
   }, [isAutoFit]);
 
-  // Dynamically calculate font size and line height so all lines fit into available canvas height
+  // Synchronize scroll: textarea onscroll -> highlight layer and gutter
+  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    const st = e.currentTarget.scrollTop;
+    const sl = e.currentTarget.scrollLeft;
+
+    if (gutterRef.current) {
+      gutterRef.current.scrollTop = st;
+    }
+    if (highlightRef.current) {
+      highlightRef.current.scrollTop = st;
+      highlightRef.current.scrollLeft = sl;
+    }
+  };
+
+  // Reset scroll offsets for all layers to 0
+  const resetScroll = useCallback(() => {
+    if (textareaRef.current) {
+      textareaRef.current.scrollTop = 0;
+      textareaRef.current.scrollLeft = 0;
+    }
+    if (highlightRef.current) {
+      highlightRef.current.scrollTop = 0;
+      highlightRef.current.scrollLeft = 0;
+    }
+    if (gutterRef.current) {
+      gutterRef.current.scrollTop = 0;
+    }
+  }, []);
+
+  // Calculate fitting font size and line height
   const calculateAndApplyFit = useCallback(() => {
     if (!editorCanvasRef.current) return;
     const canvasHeight = editorCanvasRef.current.clientHeight;
@@ -68,35 +176,33 @@ export default function CodeEditor({
     const totalPadding = PADDING_TOP + PADDING_BOTTOM;
     const usableHeight = Math.max(60, canvasHeight - totalPadding);
 
-    // Calculate line height needed to fit all lines vertically
+    // Calculate line height needed so all lines fit vertically
     const targetLineHeight = Math.floor(usableHeight / lineCount);
 
-    // Clamp line height between 15px (crisp legible minimum) and 24px (comfortable maximum)
-    const fitLineHeight = Math.min(24, Math.max(15, targetLineHeight));
+    // Clamp line height between 15px (crisp legible minimum) and 22px (comfortable maximum)
+    const fitLineHeight = Math.min(22, Math.max(15, targetLineHeight));
 
     // Calculate proportional font size between 10px and 14px
     const fitFontSize = Math.min(14, Math.max(10, Math.round(fitLineHeight * 0.65)));
 
     setLineHeight(fitLineHeight);
     setFontSize(fitFontSize);
-  }, [code]);
+
+    // Always reset scroll positions after layout recalculation
+    requestAnimationFrame(() => {
+      resetScroll();
+    });
+  }, [code, resetScroll]);
 
   // Auto-fit whenever active practical changes
   useEffect(() => {
     setIsAutoFit(true);
     isAutoFitRef.current = true;
     calculateAndApplyFit();
+    resetScroll();
+  }, [activePracticalTitle, calculateAndApplyFit, resetScroll]);
 
-    if (textareaRef.current) {
-      textareaRef.current.scrollTop = 0;
-      textareaRef.current.scrollLeft = 0;
-    }
-    if (gutterRef.current) {
-      gutterRef.current.scrollTop = 0;
-    }
-  }, [activePracticalTitle, calculateAndApplyFit]);
-
-  // Watch for container resizes with ResizeObserver and window resize
+  // ResizeObserver on canvas
   useEffect(() => {
     calculateAndApplyFit();
 
@@ -124,21 +230,15 @@ export default function CodeEditor({
     };
   }, [calculateAndApplyFit]);
 
-  // One-click "Fit Code" button handler
+  // One-click Fit Code button
   const handleFitCode = () => {
     setIsAutoFit(true);
     isAutoFitRef.current = true;
     calculateAndApplyFit();
-    if (textareaRef.current) {
-      textareaRef.current.scrollTop = 0;
-      textareaRef.current.scrollLeft = 0;
-    }
-    if (gutterRef.current) {
-      gutterRef.current.scrollTop = 0;
-    }
+    resetScroll();
   };
 
-  // Manual zoom controls
+  // Zoom controls: adjusts font-size and scales line-height equally for all layers
   const handleZoomIn = () => {
     setIsAutoFit(false);
     isAutoFitRef.current = false;
@@ -155,14 +255,7 @@ export default function CodeEditor({
     setLineHeight(Math.round(nextSize * 1.55));
   };
 
-  // Sync scroll between textarea and line-number gutter
-  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
-    if (gutterRef.current) {
-      gutterRef.current.scrollTop = e.currentTarget.scrollTop;
-    }
-  };
-
-  // Keyboard support: Tab key inserts 4 spaces, Ctrl+Enter runs code
+  // Tab key inserts 4 spaces, Ctrl+Enter runs code
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
@@ -184,7 +277,6 @@ export default function CodeEditor({
       const updatedCode = code.substring(0, start) + spaces + code.substring(end);
       onChange(updatedCode);
 
-      // Restore cursor position after state update
       setTimeout(() => {
         textarea.selectionStart = textarea.selectionEnd = start + spaces.length;
       }, 0);
@@ -212,6 +304,9 @@ export default function CodeEditor({
 
   const fileName = language === 'cpp' ? 'main.cpp' : 'main.c';
   const lines = (code || '').split('\n');
+
+  // Compute syntax highlighted HTML (VS Code Dark+)
+  const highlightedHtml = useMemo(() => highlightCCode(code), [code]);
 
   return (
     <div className="flex flex-col h-full bg-[#121214] border border-zinc-800 rounded-xl overflow-hidden shadow-2xl select-text">
@@ -244,7 +339,8 @@ export default function CodeEditor({
 
           {activePracticalTitle && (
             <span className="hidden xl:inline-block text-[11px] text-zinc-400 font-sans truncate max-w-[220px]">
-              {activePracticalExpNumber ? `${activePracticalExpNumber}: ` : ''}{activePracticalTitle}
+              {activePracticalExpNumber ? `${activePracticalExpNumber}: ` : ''}
+              {activePracticalTitle}
             </span>
           )}
         </div>
@@ -259,7 +355,7 @@ export default function CodeEditor({
                 ? 'bg-blue-600/20 text-blue-300 border-blue-500/50 font-semibold shadow-sm'
                 : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border-zinc-800'
             }`}
-            title="Auto-fit complete code into visible editor (No scrolling)"
+            title="Auto-fit complete code into visible editor (No vertical scrolling)"
           >
             <Scan className="w-3.5 h-3.5 text-blue-400" />
             <span className="hidden sm:inline">Fit Code</span>
@@ -305,7 +401,10 @@ export default function CodeEditor({
 
           {/* Reset Code */}
           <button
-            onClick={onReset}
+            onClick={() => {
+              onReset();
+              requestAnimationFrame(resetScroll);
+            }}
             className="p-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
             title="Reset code to original PDF version"
           >
@@ -337,22 +436,24 @@ export default function CodeEditor({
         </div>
       </div>
 
-      {/* Editor Canvas: Full Available Height with Pixel-Perfect Alignment */}
+      {/* Editor Canvas: Gutter + Highlight Layer + Textarea (VS Code Style) */}
       <div
         ref={editorCanvasRef}
         className="relative flex-1 min-h-0 bg-[#121214] flex overflow-hidden cursor-text"
         onClick={() => textareaRef.current?.focus()}
       >
-        {/* Line Numbers Gutter */}
+        {/* Layer 1: Line Numbers Gutter */}
         <div
           ref={gutterRef}
           aria-hidden="true"
-          className="w-12 bg-[#18181b] text-zinc-500 select-none text-right pr-2.5 border-r border-zinc-800 font-mono overflow-hidden shrink-0"
+          className="w-12 bg-[#18181b] text-zinc-600 select-none text-right pr-2.5 border-r border-zinc-800 font-mono overflow-hidden shrink-0 pointer-events-none"
           style={{
+            fontFamily: FONT_FAMILY,
             fontSize: `${fontSize}px`,
             lineHeight: `${lineHeight}px`,
             paddingTop: `${PADDING_TOP}px`,
-            paddingBottom: `${PADDING_BOTTOM}px`
+            paddingBottom: `${PADDING_BOTTOM}px`,
+            boxSizing: 'border-box'
           }}
         >
           {lines.map((_, i) => (
@@ -368,8 +469,34 @@ export default function CodeEditor({
           ))}
         </div>
 
-        {/* Controlled Code Textarea */}
+        {/* Editor Body: Overlay Container for Highlight <pre> and <textarea> */}
         <div className="flex-1 relative h-full min-h-0 overflow-hidden">
+          {/* Layer 2: Syntax Highlighted <pre> (VS Code Dark+ Colors) */}
+          <pre
+            ref={highlightRef}
+            aria-hidden="true"
+            className="absolute inset-0 m-0 pointer-events-none select-none font-mono whitespace-pre overflow-hidden"
+            style={{
+              fontFamily: FONT_FAMILY,
+              fontSize: `${fontSize}px`,
+              lineHeight: `${lineHeight}px`,
+              paddingTop: `${PADDING_TOP}px`,
+              paddingBottom: `${PADDING_BOTTOM}px`,
+              paddingLeft: `${PADDING_X}px`,
+              paddingRight: `${PADDING_X}px`,
+              tabSize: 4,
+              margin: 0,
+              border: 'none',
+              width: '100%',
+              height: '100%',
+              minHeight: '100%',
+              boxSizing: 'border-box',
+              background: 'transparent'
+            }}
+            dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+          />
+
+          {/* Layer 3: Controlled Interactive <textarea> Layer */}
           <textarea
             ref={textareaRef}
             value={code}
@@ -381,15 +508,21 @@ export default function CodeEditor({
             autoComplete="off"
             autoCorrect="off"
             placeholder="// Type or paste C/C++ code here..."
-            className="w-full h-full bg-transparent text-emerald-100 font-mono focus:outline-none resize-none overflow-auto whitespace-pre selection:bg-blue-600/40 tab-4 caret-white"
+            className="absolute inset-0 w-full h-full m-0 bg-transparent text-transparent caret-white font-mono focus:outline-none resize-none overflow-auto whitespace-pre selection:bg-blue-600/40 tab-4"
             style={{
+              fontFamily: FONT_FAMILY,
               fontSize: `${fontSize}px`,
               lineHeight: `${lineHeight}px`,
               paddingTop: `${PADDING_TOP}px`,
               paddingBottom: `${PADDING_BOTTOM}px`,
-              paddingLeft: '12px',
-              paddingRight: '12px',
-              tabSize: 4
+              paddingLeft: `${PADDING_X}px`,
+              paddingRight: `${PADDING_X}px`,
+              tabSize: 4,
+              border: 'none',
+              outline: 'none',
+              boxSizing: 'border-box',
+              color: 'transparent',
+              WebkitTextFillColor: 'transparent'
             }}
           />
         </div>
