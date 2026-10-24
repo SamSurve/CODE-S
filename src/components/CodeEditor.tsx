@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import dynamic from 'next/dynamic';
 import {
   Play,
   RotateCcw,
@@ -10,18 +9,10 @@ import {
   Download,
   Upload,
   Code2,
-  Moon,
-  Sun,
-  Loader2,
-  FileCode
+  FileCode,
+  Loader2
 } from 'lucide-react';
 import { SupportedLanguage } from '../types';
-
-// Dynamically import Monaco Editor with ssr: false
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
-  ssr: false,
-  loading: () => null // We handle fallback gracefully below so it never looks blank
-});
 
 interface CodeEditorProps {
   code: string;
@@ -49,37 +40,46 @@ export default function CodeEditor({
   activePracticalExpNumber
 }: CodeEditorProps) {
   const [copied, setCopied] = useState(false);
-  const [theme, setTheme] = useState<'vs-dark' | 'light'>('vs-dark');
-  const [fontSize, setFontSize] = useState<number>(14);
-  const [isMonacoReady, setIsMonacoReady] = useState(false);
+  const [fontSize, setFontSize] = useState<number>(13);
 
-  // Reference to the active Monaco Editor instance
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const editorRef = useRef<any>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const gutterRef = useRef<HTMLDivElement>(null);
 
-  // Sync Monaco value whenever `code` prop updates from parent (e.g. practical dropdown selection)
-  useEffect(() => {
-    if (editorRef.current) {
-      const currentVal = editorRef.current.getValue();
-      if (currentVal !== code) {
-        editorRef.current.setValue(code || '');
-      }
+  // Sync scroll between textarea and line-number gutter
+  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    if (gutterRef.current) {
+      gutterRef.current.scrollTop = e.currentTarget.scrollTop;
     }
-  }, [code]);
+  };
 
-  // Keyboard shortcut: Ctrl+Enter or Cmd+Enter to Run
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        if (!isLoading) {
-          onRun();
-        }
+  // Keyboard support: Tab key inserts 4 spaces, Ctrl+Enter runs code
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (!isLoading) {
+        onRun();
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isLoading, onRun]);
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const spaces = '    ';
+
+      const updatedCode = code.substring(0, start) + spaces + code.substring(end);
+      onChange(updatedCode);
+
+      // Restore cursor position after state update
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + spaces.length;
+      }, 0);
+    }
+  };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -100,28 +100,14 @@ export default function CodeEditor({
     URL.revokeObjectURL(url);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleEditorDidMount = (editor: any) => {
-    editorRef.current = editor;
-    setIsMonacoReady(true);
-    // Force immediate sync of code into Monaco
-    if (code && editor.getValue() !== code) {
-      editor.setValue(code);
-    }
-    // Re-layout to prevent zero-height bugs
-    setTimeout(() => {
-      editor.layout();
-    }, 50);
-  };
-
   const fileName = language === 'cpp' ? 'main.cpp' : 'main.c';
   const lines = (code || '').split('\n');
 
   return (
-    <div className="flex flex-col h-full bg-[#121214] border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
+    <div className="flex flex-col h-full bg-[#121214] border border-zinc-800 rounded-xl overflow-hidden shadow-2xl select-text">
       {/* Editor Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-[#18181b] border-b border-zinc-800 shrink-0">
-        {/* Left: Tab Name & Language Selector */}
+        {/* Left: File Tab & Language Selector */}
         <div className="flex items-center gap-2">
           {/* File Tab */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#121214] border border-zinc-700/80 text-xs font-mono text-zinc-100 font-semibold shadow-inner">
@@ -197,18 +183,9 @@ export default function CodeEditor({
           <button
             onClick={onReset}
             className="p-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
-            title="Reset code to PDF version"
+            title="Reset code to original PDF version"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-
-          {/* Theme Switcher */}
-          <button
-            onClick={() => setTheme(theme === 'vs-dark' ? 'light' : 'vs-dark')}
-            className="p-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
-            title={`Switch to ${theme === 'vs-dark' ? 'Light' : 'Dark'} theme`}
-          >
-            {theme === 'vs-dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </button>
 
           {/* Prominent Blue RUN Button */}
@@ -236,51 +213,38 @@ export default function CodeEditor({
         </div>
       </div>
 
-      {/* Editor Canvas Container */}
-      <div className="relative flex-1 min-h-[350px] bg-[#121214] overflow-hidden">
-        {/* Instant Native Code Display: guarantees code is ALWAYS immediately visible even before/while Monaco loads */}
-        {!isMonacoReady && (
-          <div className="absolute inset-0 flex bg-[#121214] font-mono text-xs overflow-auto z-10">
-            {/* Line Numbers */}
-            <div className="py-2.5 px-2 bg-[#18181b] text-zinc-600 select-none text-right border-r border-zinc-800 font-mono text-[13px] leading-relaxed min-w-[40px]">
-              {lines.map((_, i) => (
-                <div key={i}>{i + 1}</div>
-              ))}
+      {/* Editor Canvas: Reliable, Controlled Multiline Editor with Line-Number Gutter */}
+      <div className="relative flex-1 min-h-[350px] bg-[#121214] flex overflow-hidden">
+        {/* Line Numbers Gutter */}
+        <div
+          ref={gutterRef}
+          aria-hidden="true"
+          className="w-12 py-3 bg-[#18181b] text-zinc-600 select-none text-right pr-3 border-r border-zinc-800 font-mono text-[13px] leading-6 overflow-hidden shrink-0"
+        >
+          {lines.map((_, i) => (
+            <div key={i} className="h-6">
+              {i + 1}
             </div>
-            {/* Native Code Textarea */}
-            <textarea
-              value={code}
-              onChange={(e) => onChange(e.target.value)}
-              spellCheck={false}
-              className="flex-1 p-2.5 bg-transparent text-zinc-200 font-mono text-[13px] leading-relaxed focus:outline-none resize-none selection:bg-blue-600/30 whitespace-pre"
-              style={{ tabSize: 4 }}
-            />
-          </div>
-        )}
+          ))}
+        </div>
 
-        {/* Monaco Editor Canvas */}
-        <div className={`w-full h-full ${!isMonacoReady ? 'opacity-0' : 'opacity-100 transition-opacity duration-150'}`}>
-          <MonacoEditor
-            key={`${activePracticalExpNumber || 'editor'}-${language}`}
-            height="100%"
-            language={language === 'cpp' ? 'cpp' : 'c'}
+        {/* Controlled Code Textarea */}
+        <div className="flex-1 relative h-full overflow-hidden">
+          <textarea
+            ref={textareaRef}
             value={code}
-            theme={theme}
-            onMount={handleEditorDidMount}
-            onChange={(val) => onChange(val || '')}
-            options={{
-              fontSize: fontSize,
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              tabSize: 4,
-              lineNumbers: 'on',
-              lineDecorationsWidth: 10,
-              wordWrap: 'on',
-              fontFamily: "var(--font-geist-mono), 'Fira Code', Consolas, monospace",
-              renderWhitespace: 'selection',
-              smoothScrolling: true,
-              padding: { top: 10, bottom: 10 }
+            onChange={(e) => onChange(e.target.value)}
+            onScroll={handleScroll}
+            onKeyDown={handleKeyDown}
+            spellCheck={false}
+            autoCapitalize="off"
+            autoComplete="off"
+            autoCorrect="off"
+            placeholder="// Type or paste C/C++ code here..."
+            className="w-full h-full p-3 bg-transparent text-emerald-100 font-mono text-[13px] leading-6 focus:outline-none resize-none overflow-auto whitespace-pre selection:bg-blue-600/40 tab-4 caret-white"
+            style={{
+              fontSize: `${fontSize}px`,
+              tabSize: 4
             }}
           />
         </div>
@@ -292,18 +256,19 @@ export default function CodeEditor({
           <span>{language.toUpperCase()} GCC</span>
           <span>Lines: {lines.length}</span>
           <span className="hidden sm:inline">UTF-8</span>
+          <span className="hidden md:inline">Ctrl+Enter to Run</span>
         </div>
         <div className="flex items-center gap-2">
           <span>Zoom:</span>
           <button
-            onClick={() => setFontSize(Math.max(12, fontSize - 1))}
+            onClick={() => setFontSize(Math.max(11, fontSize - 1))}
             className="px-1 text-zinc-400 hover:text-white"
           >
             -
           </button>
           <span className="text-zinc-300">{fontSize}px</span>
           <button
-            onClick={() => setFontSize(Math.min(20, fontSize + 1))}
+            onClick={() => setFontSize(Math.min(18, fontSize + 1))}
             className="px-1 text-zinc-400 hover:text-white"
           >
             +

@@ -56,7 +56,7 @@ export default function Navbar() {
   }, [isPracticalsDropdownOpen]);
 
   const handleSelectPractical = (practical: Practical) => {
-    // Dispatch custom event for compiler page to pick up instantly if already on compiler
+    // Dispatch custom event for compiler page to pick up instantly
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
         new CustomEvent('aoa:load-practical', { detail: practical.id })
@@ -66,13 +66,8 @@ export default function Navbar() {
     // Close dropdown automatically
     setIsPracticalsDropdownOpen(false);
 
-    // If not already on compiler, route to compiler with practical param
-    if (pathname !== '/compiler' && pathname !== '/') {
-      router.push(`/compiler?practical=${practical.id}`);
-    } else {
-      // Update URL query smoothly
-      router.push(`/compiler?practical=${practical.id}`, { scroll: false });
-    }
+    // Update URL query smoothly
+    router.push(`/compiler?practical=${practical.id}`, { scroll: false });
   };
 
   const handleOpenInfo = (e: React.MouseEvent, practical: Practical) => {

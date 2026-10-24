@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../../components/Navbar';
 import CodeEditor from '../../components/CodeEditor';
 import RightOutputPanel, { OutputTab } from '../../components/RightOutputPanel';
@@ -11,17 +10,16 @@ import { PRACTICALS, DEFAULT_C_STARTER, DEFAULT_CPP_STARTER } from '../../data/p
 import { SupportedLanguage, ExecutionResponse, Practical, CustomRunnerConfig } from '../../types';
 import { AlertCircle } from 'lucide-react';
 
-function CompilerContent() {
-  const searchParams = useSearchParams();
-  const practicalParam = searchParams.get('practical');
-  const sourceParam = searchParams.get('source');
+export default function CompilerPage() {
+  // Default initial practical: Experiment 1.1 Insertion Sort from PDF Page 1
+  const initialPractical = PRACTICALS[0];
 
-  const [language, setLanguage] = useState<SupportedLanguage>('c');
-  const [code, setCode] = useState<string>(DEFAULT_C_STARTER);
-  const [sampleOutput, setSampleOutput] = useState<string>('');
-  const [sampleInput, setSampleInput] = useState<string>('');
-  const [stdin, setStdin] = useState<string>('');
-  const [activePractical, setActivePractical] = useState<Practical | null>(null);
+  const [language, setLanguage] = useState<SupportedLanguage>(initialPractical.language);
+  const [code, setCode] = useState<string>(initialPractical.sourceCode);
+  const [sampleOutput, setSampleOutput] = useState<string>(initialPractical.sampleOutput);
+  const [sampleInput, setSampleInput] = useState<string>(initialPractical.sampleInput);
+  const [stdin, setStdin] = useState<string>(initialPractical.sampleInput);
+  const [activePractical, setActivePractical] = useState<Practical | null>(initialPractical);
 
   // Active tab in right window: starts on 'pdf_sample' immediately on practical selection
   const [outputTab, setOutputTab] = useState<OutputTab>('pdf_sample');
@@ -63,26 +61,34 @@ function CompilerContent() {
     };
   }, [loadPracticalById]);
 
-  // Initial load from URL searchParams or upload or default to Experiment 1.1 Insertion Sort
+  // Read URL query parameters on mount or popstate without triggering Suspense
   useEffect(() => {
-    if (practicalParam) {
-      loadPracticalById(practicalParam);
-    } else if (sourceParam === 'upload') {
-      const savedCode = localStorage.getItem('aoa_custom_code');
-      const savedLang = localStorage.getItem('aoa_custom_lang') as SupportedLanguage;
-      if (savedCode) {
-        setCode(savedCode);
-        if (savedLang) setLanguage(savedLang);
-        setActivePractical(null);
-        setSampleOutput('');
-        setSampleInput('');
-        setOutputTab('live_run');
+    const checkUrlParams = () => {
+      if (typeof window === 'undefined') return;
+      const params = new URLSearchParams(window.location.search);
+      const practical = params.get('practical');
+      const source = params.get('source');
+
+      if (practical) {
+        loadPracticalById(practical);
+      } else if (source === 'upload') {
+        const savedCode = localStorage.getItem('aoa_custom_code');
+        const savedLang = localStorage.getItem('aoa_custom_lang') as SupportedLanguage;
+        if (savedCode) {
+          setCode(savedCode);
+          if (savedLang) setLanguage(savedLang);
+          setActivePractical(null);
+          setSampleOutput('');
+          setSampleInput('');
+          setOutputTab('live_run');
+        }
       }
-    } else {
-      // Default initial practical: Experiment 1.1 Insertion Sort from PDF Page 1
-      loadPracticalById('insertion-sort');
-    }
-  }, [practicalParam, sourceParam, loadPracticalById]);
+    };
+
+    checkUrlParams();
+    window.addEventListener('popstate', checkUrlParams);
+    return () => window.removeEventListener('popstate', checkUrlParams);
+  }, [loadPracticalById]);
 
   // Handle language change
   const handleLanguageChange = (newLang: SupportedLanguage) => {
@@ -124,7 +130,7 @@ function CompilerContent() {
     setResult(null);
   };
 
-  // Run code against /api/execute using automatically loaded PDF sample input
+  // Run code against /api/execute using currently visible code and preloaded stdin
   const handleRun = async () => {
     if (!code.trim()) {
       alert('Code editor cannot be empty.');
@@ -163,7 +169,7 @@ function CompilerContent() {
         body: JSON.stringify({
           source_code: code,
           language_id: languageId,
-          stdin: stdin // Uses preloaded PDF sample input automatically without requiring user typing
+          stdin: stdin // Uses preloaded PDF sample input or user-edited input
         })
       });
 
@@ -221,10 +227,9 @@ function CompilerContent() {
 
         {/* Side-by-Side Split: Left Editor (50%) + Right Output Window (50%) */}
         <div className="flex-1 flex flex-col lg:flex-row gap-2.5 min-h-0">
-          {/* LEFT WINDOW: Monaco Code Editor */}
+          {/* LEFT WINDOW: Controlled, Visible, Editable Code Editor */}
           <div className="w-full lg:w-1/2 h-1/2 lg:h-full flex flex-col min-h-0">
             <CodeEditor
-              key={activePractical?.id || 'custom'}
               code={code}
               onChange={setCode}
               language={language}
@@ -271,19 +276,5 @@ function CompilerContent() {
         onClose={() => setIsDetailOpen(false)}
       />
     </div>
-  );
-}
-
-export default function CompilerPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center text-zinc-400 font-mono text-sm">
-          Loading AOA Compiler...
-        </div>
-      }
-    >
-      <CompilerContent />
-    </Suspense>
   );
 }
