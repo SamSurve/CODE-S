@@ -128,6 +128,7 @@ export default function CodeEditor({
   const [isAutoFit, setIsAutoFit] = useState<boolean>(true);
 
   const editorCanvasRef = useRef<HTMLDivElement>(null);
+  const editorBodyRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLPreElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
@@ -137,22 +138,33 @@ export default function CodeEditor({
     isAutoFitRef.current = isAutoFit;
   }, [isAutoFit]);
 
-  // Synchronize scroll: textarea onscroll -> highlight layer and gutter
-  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+  // Synchronize scroll from editor body container to gutter
+  const handleBodyScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const st = e.currentTarget.scrollTop;
-    const sl = e.currentTarget.scrollLeft;
-
     if (gutterRef.current) {
       gutterRef.current.scrollTop = st;
     }
-    if (highlightRef.current) {
-      highlightRef.current.scrollTop = st;
-      highlightRef.current.scrollLeft = sl;
+  };
+
+  // Synchronize scroll from textarea to gutter and editor body
+  const handleTextareaScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    const st = e.currentTarget.scrollTop;
+    const sl = e.currentTarget.scrollLeft;
+    if (gutterRef.current) {
+      gutterRef.current.scrollTop = st;
+    }
+    if (editorBodyRef.current) {
+      editorBodyRef.current.scrollTop = st;
+      editorBodyRef.current.scrollLeft = sl;
     }
   };
 
   // Reset scroll offsets for all layers to 0
   const resetScroll = useCallback(() => {
+    if (editorBodyRef.current) {
+      editorBodyRef.current.scrollTop = 0;
+      editorBodyRef.current.scrollLeft = 0;
+    }
     if (textareaRef.current) {
       textareaRef.current.scrollTop = 0;
       textareaRef.current.scrollLeft = 0;
@@ -436,7 +448,7 @@ export default function CodeEditor({
         </div>
       </div>
 
-      {/* Editor Canvas: Gutter + Highlight Layer + Textarea (VS Code Style) */}
+      {/* Editor Canvas: Gutter + In-flow Highlight Layer + Textarea (VS Code Style) */}
       <div
         ref={editorCanvasRef}
         className="relative flex-1 min-h-0 bg-[#121214] flex overflow-hidden cursor-text"
@@ -469,13 +481,17 @@ export default function CodeEditor({
           ))}
         </div>
 
-        {/* Editor Body: Overlay Container for Highlight <pre> and <textarea> */}
-        <div className="flex-1 relative h-full min-h-0 overflow-hidden">
-          {/* Layer 2: Syntax Highlighted <pre> (VS Code Dark+ Colors) */}
+        {/* Editor Body: Overlay Container for In-Flow Highlight <pre> and <textarea> */}
+        <div
+          ref={editorBodyRef}
+          onScroll={handleBodyScroll}
+          className="flex-1 relative h-full min-h-0 overflow-auto"
+        >
+          {/* Layer 2: In-Flow Syntax Highlighted <pre> (Provides natural content height, prevents collapse) */}
           <pre
             ref={highlightRef}
             aria-hidden="true"
-            className="absolute inset-0 m-0 pointer-events-none select-none font-mono whitespace-pre overflow-hidden"
+            className="relative min-h-full m-0 pointer-events-none select-none font-mono whitespace-pre"
             style={{
               fontFamily: FONT_FAMILY,
               fontSize: `${fontSize}px`,
@@ -487,28 +503,25 @@ export default function CodeEditor({
               tabSize: 4,
               margin: 0,
               border: 'none',
-              width: '100%',
-              height: '100%',
-              minHeight: '100%',
               boxSizing: 'border-box',
               background: 'transparent'
             }}
             dangerouslySetInnerHTML={{ __html: highlightedHtml }}
           />
 
-          {/* Layer 3: Controlled Interactive <textarea> Layer */}
+          {/* Layer 3: Controlled Interactive <textarea> Layer (Takes exact size of in-flow <pre>) */}
           <textarea
             ref={textareaRef}
             value={code}
             onChange={(e) => onChange(e.target.value)}
-            onScroll={handleScroll}
+            onScroll={handleTextareaScroll}
             onKeyDown={handleKeyDown}
             spellCheck={false}
             autoCapitalize="off"
             autoComplete="off"
             autoCorrect="off"
             placeholder="// Type or paste C/C++ code here..."
-            className="absolute inset-0 w-full h-full m-0 bg-transparent text-transparent caret-white font-mono focus:outline-none resize-none overflow-auto whitespace-pre selection:bg-blue-600/40 tab-4"
+            className="absolute inset-0 w-full h-full m-0 bg-transparent text-transparent caret-white font-mono focus:outline-none resize-none whitespace-pre selection:bg-blue-600/40 tab-4"
             style={{
               fontFamily: FONT_FAMILY,
               fontSize: `${fontSize}px`,
@@ -522,7 +535,8 @@ export default function CodeEditor({
               outline: 'none',
               boxSizing: 'border-box',
               color: 'transparent',
-              WebkitTextFillColor: 'transparent'
+              WebkitTextFillColor: 'transparent',
+              caretColor: '#ffffff'
             }}
           />
         </div>

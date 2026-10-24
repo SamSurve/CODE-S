@@ -140,6 +140,7 @@ export default function Navbar() {
                       return (
                         <div
                           key={practical.id}
+                          data-practical-id={practical.id}
                           onClick={() => handleSelectPractical(practical)}
                           className="group flex items-center justify-between px-3 py-2 hover:bg-blue-600/10 cursor-pointer transition-colors"
                         >
