@@ -215,7 +215,7 @@ export default function Navbar() {
             <button
               onClick={() => setIsSettingsOpen(true)}
               className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
-              title="Execution Engine Settings (Judge0 / RapidAPI)"
+              title="Compiler Sandbox Settings"
               aria-label="Settings"
             >
               <Settings className="w-4 h-4" />

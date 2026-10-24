@@ -178,7 +178,7 @@ export default function CompilerPage() {
       if (!res.ok) {
         setApiErrorBanner(
           data.error ||
-            'Code execution service error. If you are offline or reaching rate limits, configure custom Judge0 API keys in settings.'
+            'Code execution service error. If you are offline or reaching rate limits, configure custom sandbox API keys in settings.'
         );
       }
 
@@ -210,10 +210,10 @@ export default function CompilerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-zinc-100 flex flex-col font-sans selection:bg-blue-600/30">
+    <div className="h-screen h-[100dvh] max-h-screen overflow-hidden bg-[#0a0a0c] text-zinc-100 flex flex-col font-sans selection:bg-blue-600/30">
       <Navbar />
 
-      <main className="flex-1 flex flex-col h-[calc(100dvh-3.5rem)] overflow-hidden p-1.5 sm:p-2 lg:p-2.5">
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden p-1.5 sm:p-2 lg:p-2.5">
         {/* API Error Notification if any */}
         {apiErrorBanner && (
           <div className="mb-1.5 p-2 rounded-lg bg-rose-950/40 border border-rose-800/60 text-xs text-rose-300 flex items-start gap-2 shrink-0">
@@ -225,10 +225,10 @@ export default function CompilerPage() {
           </div>
         )}
 
-        {/* Side-by-Side Split: Left Editor (50%) + Right Output Window (50%) on desktop and tablet */}
-        <div className="flex-1 flex flex-col md:flex-row gap-2 min-h-0 h-full">
+        {/* Side-by-Side Split: Left Editor (50%) + Right Output Window (50%) on desktop; Stacked on mobile */}
+        <div className="flex-1 flex flex-col md:flex-row gap-2 min-h-0 h-full overflow-y-auto md:overflow-hidden">
           {/* LEFT WINDOW: Controlled, Visible, Editable Code Editor */}
-          <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col min-h-0">
+          <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col min-h-[300px] md:min-h-0">
             <CodeEditor
               code={code}
               onChange={setCode}
@@ -243,8 +243,8 @@ export default function CompilerPage() {
             />
           </div>
 
-          {/* RIGHT WINDOW: Output Terminal (Shows "Sample Output from PDF" immediately, Live Output on Run) */}
-          <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col min-h-0">
+          {/* RIGHT WINDOW: Output Terminal (Shows Output immediately, Live Output on Run) */}
+          <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col min-h-[300px] md:min-h-0">
             <RightOutputPanel
               activeTab={outputTab}
               onTabChange={setOutputTab}
@@ -257,6 +257,7 @@ export default function CompilerPage() {
               onClearLive={() => setResult(null)}
               practicalTitle={activePractical?.title}
               practicalExpNumber={activePractical?.expNumber}
+              practicalId={activePractical?.id}
             />
           </div>
         </div>

@@ -62,7 +62,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-zinc-100">Execution Engine Settings</h2>
-              <p className="text-xs text-zinc-400">Configure Judge0 or RapidAPI sandboxed execution API</p>
+              <p className="text-xs text-zinc-400">Configure sandboxed execution API</p>
             </div>
           </div>
           <button
@@ -78,15 +78,14 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <div className="p-3.5 rounded-xl bg-blue-950/30 border border-blue-800/40 text-blue-300 text-xs leading-relaxed flex gap-2.5">
             <Server className="w-4 h-4 shrink-0 mt-0.5 text-blue-400" />
             <div>
-              <span className="font-semibold text-blue-200">Default Sandbox:</span> By default, this app connects through the server to the public Judge0 Community Edition endpoint (
-              <code className="text-blue-100">https://ce.judge0.com</code>). You can specify your own self-hosted or RapidAPI Judge0 endpoint below.
+              <span className="font-semibold text-blue-200">Default Sandbox:</span> By default, this app connects through the server to the public sandboxed compiler engine endpoint. You can specify a custom self-hosted or RapidAPI endpoint below.
             </div>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Judge0 API URL
+                Compiler API URL
               </label>
               <input
                 type="text"

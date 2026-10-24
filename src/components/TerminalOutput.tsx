@@ -221,7 +221,7 @@ export default function TerminalOutput({
       <div className="flex items-center justify-between px-4 py-1.5 bg-zinc-900 border-t border-zinc-800 text-[11px] text-zinc-500 font-mono">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
-          <span>{result?.engine || 'Judge0 CE Sandboxed Engine'}</span>
+          <span>{result?.engine || 'Sandboxed Execution Engine'}</span>
         </div>
         <div>
           {result && (

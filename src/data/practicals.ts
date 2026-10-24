@@ -27,9 +27,7 @@ export const PRACTICALS: Practical[] = [
     description: 'An efficient in-place comparison sort that builds the final sorted array one item at a time, well-suited for small datasets or nearly sorted arrays.',
     sampleInput: `5
 55 83 75 23 22`,
-    sampleOutput: `Enter the array size: 5
-Enter the array elements:
-55 83 75 23 22
+    sampleOutput: `Enter the array size: Enter the array elements:
 Sorted Elements are:
 22\t23\t55\t75\t83`,
     sourceCode: `#include <stdio.h>
@@ -83,9 +81,7 @@ int main() {
     description: 'A straightforward comparison-based algorithm that divides the list into sorted and unsorted parts, repeatedly selecting the smallest element.',
     sampleInput: `6
 55 83 75 23 75 22`,
-    sampleOutput: `Enter the array size: 6
-Enter the array elements:
-55 83 75 23 75 22
+    sampleOutput: `Enter the array size: Enter the array elements:
 Sorted Elements are:
 22\t23\t55\t75\t75\t83`,
     sourceCode: `#include <stdio.h>

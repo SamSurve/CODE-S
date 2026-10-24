@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     'C Compiler',
     'C++ Compiler',
     'Online IDE',
-    'Judge0',
+    'Sandboxed Engine',
     'Algorithms'
   ],
   authors: [{ name: 'Siddhant Surve' }]
