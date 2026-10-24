@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Play,
   RotateCcw,
@@ -10,7 +10,8 @@ import {
   Upload,
   Code2,
   FileCode,
-  Loader2
+  Loader2,
+  Scan
 } from 'lucide-react';
 import { SupportedLanguage } from '../types';
 
@@ -27,7 +28,8 @@ interface CodeEditorProps {
   activePracticalExpNumber?: string;
 }
 
-const LINE_HEIGHT_PX = 24;
+const PADDING_TOP = 8;
+const PADDING_BOTTOM = 16;
 
 export default function CodeEditor({
   code,
@@ -43,19 +45,48 @@ export default function CodeEditor({
 }: CodeEditorProps) {
   const [copied, setCopied] = useState(false);
   const [fontSize, setFontSize] = useState<number>(13);
+  const [lineHeight, setLineHeight] = useState<number>(20);
+  const [isAutoFit, setIsAutoFit] = useState<boolean>(true);
 
+  const editorCanvasRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
+  const isAutoFitRef = useRef<boolean>(true);
 
-  // Sync scroll between textarea and line-number gutter
-  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
-    if (gutterRef.current) {
-      gutterRef.current.scrollTop = e.currentTarget.scrollTop;
-    }
-  };
-
-  // When practical changes or resets, scroll editor back to top line 1
+  // Keep isAutoFitRef in sync with state
   useEffect(() => {
+    isAutoFitRef.current = isAutoFit;
+  }, [isAutoFit]);
+
+  // Dynamically calculate font size and line height so all lines fit into available canvas height
+  const calculateAndApplyFit = useCallback(() => {
+    if (!editorCanvasRef.current) return;
+    const canvasHeight = editorCanvasRef.current.clientHeight;
+    if (canvasHeight <= 0) return;
+
+    const lineCount = (code || '').split('\n').length || 1;
+    const totalPadding = PADDING_TOP + PADDING_BOTTOM;
+    const usableHeight = Math.max(60, canvasHeight - totalPadding);
+
+    // Calculate line height needed to fit all lines vertically
+    const targetLineHeight = Math.floor(usableHeight / lineCount);
+
+    // Clamp line height between 15px (crisp legible minimum) and 24px (comfortable maximum)
+    const fitLineHeight = Math.min(24, Math.max(15, targetLineHeight));
+
+    // Calculate proportional font size between 10px and 14px
+    const fitFontSize = Math.min(14, Math.max(10, Math.round(fitLineHeight * 0.65)));
+
+    setLineHeight(fitLineHeight);
+    setFontSize(fitFontSize);
+  }, [code]);
+
+  // Auto-fit whenever active practical changes
+  useEffect(() => {
+    setIsAutoFit(true);
+    isAutoFitRef.current = true;
+    calculateAndApplyFit();
+
     if (textareaRef.current) {
       textareaRef.current.scrollTop = 0;
       textareaRef.current.scrollLeft = 0;
@@ -63,7 +94,73 @@ export default function CodeEditor({
     if (gutterRef.current) {
       gutterRef.current.scrollTop = 0;
     }
-  }, [activePracticalTitle]);
+  }, [activePracticalTitle, calculateAndApplyFit]);
+
+  // Watch for container resizes with ResizeObserver and window resize
+  useEffect(() => {
+    calculateAndApplyFit();
+
+    const canvas = editorCanvasRef.current;
+    if (!canvas || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => {
+      if (isAutoFitRef.current) {
+        calculateAndApplyFit();
+      }
+    });
+
+    observer.observe(canvas);
+
+    const handleWindowResize = () => {
+      if (isAutoFitRef.current) {
+        calculateAndApplyFit();
+      }
+    };
+    window.addEventListener('resize', handleWindowResize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', handleWindowResize);
+    };
+  }, [calculateAndApplyFit]);
+
+  // One-click "Fit Code" button handler
+  const handleFitCode = () => {
+    setIsAutoFit(true);
+    isAutoFitRef.current = true;
+    calculateAndApplyFit();
+    if (textareaRef.current) {
+      textareaRef.current.scrollTop = 0;
+      textareaRef.current.scrollLeft = 0;
+    }
+    if (gutterRef.current) {
+      gutterRef.current.scrollTop = 0;
+    }
+  };
+
+  // Manual zoom controls
+  const handleZoomIn = () => {
+    setIsAutoFit(false);
+    isAutoFitRef.current = false;
+    const nextSize = Math.min(18, fontSize + 1);
+    setFontSize(nextSize);
+    setLineHeight(Math.round(nextSize * 1.55));
+  };
+
+  const handleZoomOut = () => {
+    setIsAutoFit(false);
+    isAutoFitRef.current = false;
+    const nextSize = Math.max(10, fontSize - 1);
+    setFontSize(nextSize);
+    setLineHeight(Math.round(nextSize * 1.55));
+  };
+
+  // Sync scroll between textarea and line-number gutter
+  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    if (gutterRef.current) {
+      gutterRef.current.scrollTop = e.currentTarget.scrollTop;
+    }
+  };
 
   // Keyboard support: Tab key inserts 4 spaces, Ctrl+Enter runs code
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -119,17 +216,17 @@ export default function CodeEditor({
   return (
     <div className="flex flex-col h-full bg-[#121214] border border-zinc-800 rounded-xl overflow-hidden shadow-2xl select-text">
       {/* Editor Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-[#18181b] border-b border-zinc-800 shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-1.5 px-3 py-1.5 bg-[#18181b] border-b border-zinc-800 shrink-0">
         {/* Left: File Tab & Language Selector */}
         <div className="flex items-center gap-2">
           {/* File Tab */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#121214] border border-zinc-700/80 text-xs font-mono text-zinc-100 font-semibold shadow-inner">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#121214] border border-zinc-700/80 text-xs font-mono text-zinc-100 font-semibold shadow-inner">
             <FileCode className="w-3.5 h-3.5 text-blue-400" />
             <span>{fileName}</span>
           </div>
 
           {/* Language Selector */}
-          <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-950 border border-zinc-800 text-xs">
             <Code2 className="w-3.5 h-3.5 text-zinc-400" />
             <select
               value={language}
@@ -146,7 +243,7 @@ export default function CodeEditor({
           </div>
 
           {activePracticalTitle && (
-            <span className="hidden xl:inline-block text-[11px] text-zinc-400 font-sans truncate max-w-[200px]">
+            <span className="hidden xl:inline-block text-[11px] text-zinc-400 font-sans truncate max-w-[220px]">
               {activePracticalExpNumber ? `${activePracticalExpNumber}: ` : ''}{activePracticalTitle}
             </span>
           )}
@@ -154,10 +251,24 @@ export default function CodeEditor({
 
         {/* Right: Actions and Primary RUN Button */}
         <div className="flex items-center gap-1.5">
+          {/* One-Click "Fit Code" Button */}
+          <button
+            onClick={handleFitCode}
+            className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md border transition-all ${
+              isAutoFit
+                ? 'bg-blue-600/20 text-blue-300 border-blue-500/50 font-semibold shadow-sm'
+                : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border-zinc-800'
+            }`}
+            title="Auto-fit complete code into visible editor (No scrolling)"
+          >
+            <Scan className="w-3.5 h-3.5 text-blue-400" />
+            <span className="hidden sm:inline">Fit Code</span>
+          </button>
+
           {/* Upload Button */}
           <button
             onClick={onUploadClick}
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors"
             title="Upload .c or .cpp file"
           >
             <Upload className="w-3.5 h-3.5 text-zinc-400" />
@@ -167,7 +278,7 @@ export default function CodeEditor({
           {/* Copy Code */}
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors"
             title="Copy code"
           >
             {copied ? (
@@ -186,7 +297,7 @@ export default function CodeEditor({
           {/* Download Code */}
           <button
             onClick={handleDownload}
-            className="p-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
+            className="p-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
             title="Download source code"
           >
             <Download className="w-3.5 h-3.5" />
@@ -195,7 +306,7 @@ export default function CodeEditor({
           {/* Reset Code */}
           <button
             onClick={onReset}
-            className="p-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
+            className="p-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
             title="Reset code to original PDF version"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -205,7 +316,7 @@ export default function CodeEditor({
           <button
             onClick={onRun}
             disabled={isLoading}
-            className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-md shadow-md transition-all active:scale-95 ${
+            className={`flex items-center gap-1.5 px-3.5 py-1 text-xs font-bold rounded-md shadow-md transition-all active:scale-95 ${
               isLoading
                 ? 'bg-blue-600/70 text-blue-200 cursor-wait'
                 : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30'
@@ -226,8 +337,9 @@ export default function CodeEditor({
         </div>
       </div>
 
-      {/* Editor Canvas: Reliable, Controlled Multiline Editor with Line-Number Gutter */}
+      {/* Editor Canvas: Full Available Height with Pixel-Perfect Alignment */}
       <div
+        ref={editorCanvasRef}
         className="relative flex-1 min-h-0 bg-[#121214] flex overflow-hidden cursor-text"
         onClick={() => textareaRef.current?.focus()}
       >
@@ -235,20 +347,20 @@ export default function CodeEditor({
         <div
           ref={gutterRef}
           aria-hidden="true"
-          className="w-12 bg-[#18181b] text-zinc-600 select-none text-right pr-3 border-r border-zinc-800 font-mono overflow-hidden shrink-0"
+          className="w-12 bg-[#18181b] text-zinc-500 select-none text-right pr-2.5 border-r border-zinc-800 font-mono overflow-hidden shrink-0"
           style={{
             fontSize: `${fontSize}px`,
-            lineHeight: `${LINE_HEIGHT_PX}px`,
-            paddingTop: '12px',
-            paddingBottom: '48px'
+            lineHeight: `${lineHeight}px`,
+            paddingTop: `${PADDING_TOP}px`,
+            paddingBottom: `${PADDING_BOTTOM}px`
           }}
         >
           {lines.map((_, i) => (
             <div
               key={i}
               style={{
-                height: `${LINE_HEIGHT_PX}px`,
-                lineHeight: `${LINE_HEIGHT_PX}px`
+                height: `${lineHeight}px`,
+                lineHeight: `${lineHeight}px`
               }}
             >
               {i + 1}
@@ -272,9 +384,9 @@ export default function CodeEditor({
             className="w-full h-full bg-transparent text-emerald-100 font-mono focus:outline-none resize-none overflow-auto whitespace-pre selection:bg-blue-600/40 tab-4 caret-white"
             style={{
               fontSize: `${fontSize}px`,
-              lineHeight: `${LINE_HEIGHT_PX}px`,
-              paddingTop: '12px',
-              paddingBottom: '48px',
+              lineHeight: `${lineHeight}px`,
+              paddingTop: `${PADDING_TOP}px`,
+              paddingBottom: `${PADDING_BOTTOM}px`,
               paddingLeft: '12px',
               paddingRight: '12px',
               tabSize: 4
@@ -284,25 +396,31 @@ export default function CodeEditor({
       </div>
 
       {/* Footer Info Bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#18181b] border-t border-zinc-800 text-[11px] text-zinc-500 font-mono shrink-0">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between px-3 py-1 bg-[#18181b] border-t border-zinc-800 text-[11px] text-zinc-500 font-mono shrink-0">
+        <div className="flex items-center gap-2.5">
           <span>{language.toUpperCase()} GCC</span>
           <span>Lines: {lines.length}</span>
-          <span className="hidden sm:inline">UTF-8</span>
-          <span className="hidden md:inline">Ctrl+Enter to Run</span>
+          <span className="hidden sm:inline">
+            Font: {fontSize}px / {lineHeight}px
+          </span>
+          <span className="hidden md:inline px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+            {isAutoFit ? 'Auto-Fit: ON' : 'Custom Zoom'}
+          </span>
+          <span className="hidden lg:inline text-zinc-600">Ctrl+Enter to Run</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span>Zoom:</span>
+        <div className="flex items-center gap-1.5">
           <button
-            onClick={() => setFontSize(Math.max(11, fontSize - 1))}
-            className="px-1 text-zinc-400 hover:text-white"
+            onClick={handleZoomOut}
+            className="px-1.5 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800"
+            title="Zoom Out"
           >
             -
           </button>
-          <span className="text-zinc-300">{fontSize}px</span>
+          <span className="text-zinc-300 w-8 text-center">{fontSize}px</span>
           <button
-            onClick={() => setFontSize(Math.min(18, fontSize + 1))}
-            className="px-1 text-zinc-400 hover:text-white"
+            onClick={handleZoomIn}
+            className="px-1.5 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800"
+            title="Zoom In"
           >
             +
           </button>
