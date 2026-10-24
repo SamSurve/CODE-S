@@ -27,6 +27,8 @@ interface CodeEditorProps {
   activePracticalExpNumber?: string;
 }
 
+const LINE_HEIGHT_PX = 24;
+
 export default function CodeEditor({
   code,
   onChange,
@@ -51,6 +53,17 @@ export default function CodeEditor({
       gutterRef.current.scrollTop = e.currentTarget.scrollTop;
     }
   };
+
+  // When practical changes or resets, scroll editor back to top line 1
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.scrollTop = 0;
+      textareaRef.current.scrollLeft = 0;
+    }
+    if (gutterRef.current) {
+      gutterRef.current.scrollTop = 0;
+    }
+  }, [activePracticalTitle]);
 
   // Keyboard support: Tab key inserts 4 spaces, Ctrl+Enter runs code
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -214,22 +227,37 @@ export default function CodeEditor({
       </div>
 
       {/* Editor Canvas: Reliable, Controlled Multiline Editor with Line-Number Gutter */}
-      <div className="relative flex-1 min-h-[350px] bg-[#121214] flex overflow-hidden">
+      <div
+        className="relative flex-1 min-h-0 bg-[#121214] flex overflow-hidden cursor-text"
+        onClick={() => textareaRef.current?.focus()}
+      >
         {/* Line Numbers Gutter */}
         <div
           ref={gutterRef}
           aria-hidden="true"
-          className="w-12 py-3 bg-[#18181b] text-zinc-600 select-none text-right pr-3 border-r border-zinc-800 font-mono text-[13px] leading-6 overflow-hidden shrink-0"
+          className="w-12 bg-[#18181b] text-zinc-600 select-none text-right pr-3 border-r border-zinc-800 font-mono overflow-hidden shrink-0"
+          style={{
+            fontSize: `${fontSize}px`,
+            lineHeight: `${LINE_HEIGHT_PX}px`,
+            paddingTop: '12px',
+            paddingBottom: '48px'
+          }}
         >
           {lines.map((_, i) => (
-            <div key={i} className="h-6">
+            <div
+              key={i}
+              style={{
+                height: `${LINE_HEIGHT_PX}px`,
+                lineHeight: `${LINE_HEIGHT_PX}px`
+              }}
+            >
               {i + 1}
             </div>
           ))}
         </div>
 
         {/* Controlled Code Textarea */}
-        <div className="flex-1 relative h-full overflow-hidden">
+        <div className="flex-1 relative h-full min-h-0 overflow-hidden">
           <textarea
             ref={textareaRef}
             value={code}
@@ -241,9 +269,14 @@ export default function CodeEditor({
             autoComplete="off"
             autoCorrect="off"
             placeholder="// Type or paste C/C++ code here..."
-            className="w-full h-full p-3 bg-transparent text-emerald-100 font-mono text-[13px] leading-6 focus:outline-none resize-none overflow-auto whitespace-pre selection:bg-blue-600/40 tab-4 caret-white"
+            className="w-full h-full bg-transparent text-emerald-100 font-mono focus:outline-none resize-none overflow-auto whitespace-pre selection:bg-blue-600/40 tab-4 caret-white"
             style={{
               fontSize: `${fontSize}px`,
+              lineHeight: `${LINE_HEIGHT_PX}px`,
+              paddingTop: '12px',
+              paddingBottom: '48px',
+              paddingLeft: '12px',
+              paddingRight: '12px',
               tabSize: 4
             }}
           />

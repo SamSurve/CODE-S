@@ -60,12 +60,18 @@ export async function POST(req: NextRequest) {
       Accept: 'application/json'
     };
 
+    // Only inject RapidAPI headers if an API key is actually provided OR if using RapidAPI endpoint
     if (apiKey) {
       headers['X-RapidAPI-Key'] = apiKey;
-    }
-    if (apiHost) {
+      if (apiHost) {
+        headers['X-RapidAPI-Host'] = apiHost;
+      } else if (apiUrl.includes('rapidapi.com')) {
+        headers['X-RapidAPI-Host'] = 'judge0-ce.p.rapidapi.com';
+      }
+    } else if (apiUrl.includes('rapidapi.com') && apiHost) {
       headers['X-RapidAPI-Host'] = apiHost;
     }
+
     if (authToken) {
       headers['X-Auth-Token'] = authToken;
     }
@@ -80,7 +86,7 @@ export async function POST(req: NextRequest) {
     const targetUrl = `${apiUrl.replace(/\/+$/, '')}/submissions?base64_encoded=true&wait=true`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000); // 20s timeout
+    const timeout = setTimeout(() => controller.abort(), 35000); // 35s timeout
 
     let response: Response;
     try {

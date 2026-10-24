@@ -56,18 +56,21 @@ export default function Navbar() {
   }, [isPracticalsDropdownOpen]);
 
   const handleSelectPractical = (practical: Practical) => {
+    // Close dropdown automatically
+    setIsPracticalsDropdownOpen(false);
+
     // Dispatch custom event for compiler page to pick up instantly
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
         new CustomEvent('aoa:load-practical', { detail: practical.id })
       );
+      window.history.pushState(null, '', `/compiler?practical=${practical.id}`);
     }
 
-    // Close dropdown automatically
-    setIsPracticalsDropdownOpen(false);
-
-    // Update URL query smoothly
-    router.push(`/compiler?practical=${practical.id}`, { scroll: false });
+    // Only invoke router if not already on /compiler to prevent unnecessary remounts
+    if (pathname !== '/compiler') {
+      router.push(`/compiler?practical=${practical.id}`, { scroll: false });
+    }
   };
 
   const handleOpenInfo = (e: React.MouseEvent, practical: Practical) => {
