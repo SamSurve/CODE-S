@@ -204,6 +204,32 @@ export default function CompilerPage() {
     setExecutionMemory(null);
   }, []);
 
+  // Reset directly to default initial compiler state (Home action)
+  const handleHomeClick = useCallback(() => {
+    setLoadedItem(null);
+    setLanguage('c');
+    setFiles([
+      {
+        name: DEFAULT_TEMPLATES.c.fileName,
+        code: DEFAULT_TEMPLATES.c.code
+      }
+    ]);
+    setActiveFileIndex(0);
+    setSavedOutput('');
+    setLiveOutput('');
+    setIsLiveResult(false);
+    setShowWebPreview(false);
+    setStdin('');
+    setOutputTab('output');
+    setApiErrorBanner(null);
+    setExecutionTime(null);
+    setExecutionMemory(null);
+
+    if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+      window.history.pushState(null, '', '/');
+    }
+  }, []);
+
   // Reset to original code and saved output
   const handleReset = () => {
     if (loadedItem) {
@@ -355,7 +381,7 @@ export default function CompilerPage() {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-black text-zinc-100 font-sans">
       {/* Generic Navbar */}
-      <Navbar onUploadCode={handleUploadCode} />
+      <Navbar onUploadCode={handleUploadCode} onHomeClick={handleHomeClick} />
 
       {/* API Error Notification */}
       {apiErrorBanner && (

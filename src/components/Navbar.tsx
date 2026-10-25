@@ -12,25 +12,39 @@ import SettingsModal from './SettingsModal';
 
 interface NavbarProps {
   onUploadCode?: (code: string, fileName?: string) => void;
+  onHomeClick?: () => void;
 }
 
-export default function Navbar({ onUploadCode }: NavbarProps) {
+export default function Navbar({ onUploadCode, onHomeClick }: NavbarProps) {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const handleBrandClick = (e: React.MouseEvent) => {
+    if (onHomeClick) {
+      e.preventDefault();
+      onHomeClick();
+    }
+  };
 
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md transition-all">
         <div className="w-full px-3 sm:px-5 lg:px-6 h-14 flex items-center justify-between gap-3">
-          {/* Brand Logo & Title */}
-          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 p-0.5 shadow-sm shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
+          {/* Brand Logo & Title (Home Button) */}
+          <Link
+            href="/"
+            onClick={handleBrandClick}
+            className="flex items-center gap-2.5 group shrink-0 cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 rounded-lg py-1 px-1 -ml-1 transition-colors"
+            title="Online Compiler - Home"
+            aria-label="Online Compiler Home"
+          >
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 p-0.5 shadow-sm shadow-blue-500/20 group-hover:scale-105 group-hover:shadow-blue-500/40 transition-all duration-200">
               <div className="w-full h-full bg-zinc-950 rounded-[6px] flex items-center justify-center">
                 <Code2 className="w-4 h-4 text-blue-400 group-hover:text-cyan-300 transition-colors" />
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm tracking-tight text-white group-hover:text-blue-400 transition-colors">
+              <span className="font-bold text-sm tracking-tight text-white group-hover:text-blue-400 transition-colors select-none">
                 Online Compiler
               </span>
             </div>
