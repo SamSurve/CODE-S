@@ -37,11 +37,12 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Not Found', { status: 404 });
   }
 
-  // Return only { id, expNo }
+  // Return { id, expNo, title }
   return NextResponse.json({
     items: subject.items.map((it) => ({
       id: it.id,
-      expNo: it.expNo
+      expNo: it.expNo,
+      title: it.title
     }))
   });
 }

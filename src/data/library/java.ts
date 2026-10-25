@@ -8,6 +8,7 @@ export const java: Subject = {
   {
     "id": "j1",
     "expNo": "1.1",
+    "title": "Count Numbers",
     "language": "java",
     "files": [
       {
@@ -23,6 +24,7 @@ export const java: Subject = {
   {
     "id": "j2",
     "expNo": "1.2",
+    "title": "Prime Number",
     "language": "java",
     "files": [
       {
@@ -38,6 +40,7 @@ export const java: Subject = {
   {
     "id": "j3",
     "expNo": "1.3",
+    "title": "Student Encapsulation",
     "language": "java",
     "files": [
       {
@@ -53,6 +56,7 @@ export const java: Subject = {
   {
     "id": "j4",
     "expNo": "2.1",
+    "title": "Method Overloading",
     "language": "java",
     "files": [
       {
@@ -68,6 +72,7 @@ export const java: Subject = {
   {
     "id": "j5",
     "expNo": "2.2",
+    "title": "Constructor Overloading",
     "language": "java",
     "files": [
       {
@@ -83,6 +88,7 @@ export const java: Subject = {
   {
     "id": "j6",
     "expNo": "3",
+    "title": "Abstract Class – Area of Different Shapes",
     "language": "java",
     "files": [
       {
@@ -98,6 +104,7 @@ export const java: Subject = {
   {
     "id": "j7",
     "expNo": "4.1",
+    "title": "Method Overriding (Bank Interest Rate System)",
     "language": "java",
     "files": [
       {
@@ -113,6 +120,7 @@ export const java: Subject = {
   {
     "id": "j8",
     "expNo": "4.2",
+    "title": "Method Overriding (Person Details)",
     "language": "java",
     "files": [
       {
@@ -128,6 +136,7 @@ export const java: Subject = {
   {
     "id": "j9",
     "expNo": "4.3",
+    "title": "Method Overriding (Animal & Dog)",
     "language": "java",
     "files": [
       {
@@ -143,6 +152,7 @@ export const java: Subject = {
   {
     "id": "j10",
     "expNo": "5.1",
+    "title": "Programs on Various Types of Inheritance",
     "language": "java",
     "files": [
       {
@@ -158,6 +168,7 @@ export const java: Subject = {
   {
     "id": "j11",
     "expNo": "5.2",
+    "title": "Exception Handling",
     "language": "java",
     "files": [
       {
@@ -173,6 +184,7 @@ export const java: Subject = {
   {
     "id": "j12",
     "expNo": "6",
+    "title": "Program on implementing Generic and HTTP servlet",
     "language": "java",
     "files": [
       {
@@ -200,6 +212,7 @@ export const java: Subject = {
   {
     "id": "j13",
     "expNo": "7.1",
+    "title": "Static Website using HTML, CSS and JavaScript (Student Profile)",
     "language": "html",
     "files": [
       {
@@ -223,6 +236,7 @@ export const java: Subject = {
   {
     "id": "j14",
     "expNo": "7.2",
+    "title": "Static Website using HTML, CSS and JavaScript (MyWebsite)",
     "language": "html",
     "files": [
       {
@@ -246,6 +260,7 @@ export const java: Subject = {
   {
     "id": "j15",
     "expNo": "8",
+    "title": "Program using JavaScript to validate email address",
     "language": "html",
     "files": [
       {
@@ -269,6 +284,7 @@ export const java: Subject = {
   {
     "id": "j16",
     "expNo": "9",
+    "title": "Program based on DOM to change background color",
     "language": "html",
     "files": [
       {
@@ -292,6 +308,7 @@ export const java: Subject = {
   {
     "id": "j17",
     "expNo": "10",
+    "title": "Program to Build a Stop Watch using JavaScript",
     "language": "html",
     "files": [
       {
@@ -315,6 +332,7 @@ export const java: Subject = {
   {
     "id": "j18",
     "expNo": "11",
+    "title": "Program for making use of React Hooks (Red, Blue, Green, Yellow)",
     "language": "javascript",
     "files": [
       {

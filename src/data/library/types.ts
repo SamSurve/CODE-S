@@ -8,6 +8,7 @@ export interface ItemFile {
 export interface Item {
   id: string;
   expNo: string;
+  title: string;
   language: string;
   files: ItemFile[];
   mainFile?: string;
@@ -25,4 +26,5 @@ export interface Subject {
 export interface ItemSummary {
   id: string;
   expNo: string;
+  title: string;
 }

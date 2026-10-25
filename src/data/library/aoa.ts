@@ -8,6 +8,7 @@ export const aoa: Subject = {
   {
     "id": "a1",
     "expNo": "1.1",
+    "title": "Insertion Sort",
     "language": "c",
     "files": [
       {
@@ -23,6 +24,7 @@ export const aoa: Subject = {
   {
     "id": "a2",
     "expNo": "1.2",
+    "title": "Selection Sort",
     "language": "c",
     "files": [
       {
@@ -38,6 +40,7 @@ export const aoa: Subject = {
   {
     "id": "a3",
     "expNo": "2",
+    "title": "Binary Search",
     "language": "c",
     "files": [
       {
@@ -53,6 +56,7 @@ export const aoa: Subject = {
   {
     "id": "a4",
     "expNo": "3",
+    "title": "Dijkstra's Algorithm",
     "language": "c",
     "files": [
       {
@@ -68,6 +72,7 @@ export const aoa: Subject = {
   {
     "id": "a5",
     "expNo": "4",
+    "title": "0/1 Knapsack Problem",
     "language": "c",
     "files": [
       {
@@ -83,6 +88,7 @@ export const aoa: Subject = {
   {
     "id": "a6",
     "expNo": "5",
+    "title": "Longest Common Subsequence",
     "language": "c",
     "files": [
       {
@@ -98,6 +104,7 @@ export const aoa: Subject = {
   {
     "id": "a7",
     "expNo": "6",
+    "title": "BFS & DFS Graph Traversals",
     "language": "c",
     "files": [
       {
@@ -113,6 +120,7 @@ export const aoa: Subject = {
   {
     "id": "a8",
     "expNo": "7",
+    "title": "N-Queen Problem",
     "language": "c",
     "files": [
       {
@@ -128,6 +136,7 @@ export const aoa: Subject = {
   {
     "id": "a9",
     "expNo": "8",
+    "title": "15 Puzzle using Branch and Bound",
     "language": "c",
     "files": [
       {
@@ -143,6 +152,7 @@ export const aoa: Subject = {
   {
     "id": "a10",
     "expNo": "9",
+    "title": "Naive String Matching",
     "language": "c",
     "files": [
       {
@@ -158,6 +168,7 @@ export const aoa: Subject = {
   {
     "id": "a11",
     "expNo": "10",
+    "title": "Min-Max Algorithm",
     "language": "c",
     "files": [
       {

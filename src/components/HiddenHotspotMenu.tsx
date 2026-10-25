@@ -167,8 +167,13 @@ export default function HiddenHotspotMenu({ onSelectItem }: HiddenHotspotMenuPro
   // Filtered items
   const filteredItems = useMemo(() => {
     if (!search.trim()) return items;
-    const query = search.trim().toLowerCase().replace(/^exp-?/, '');
-    return items.filter((it) => it.expNo.toLowerCase().includes(query));
+    const query = search.trim().toLowerCase();
+    const expNumQuery = query.replace(/^exp-?/, '');
+    return items.filter(
+      (it) =>
+        it.expNo.toLowerCase().includes(expNumQuery) ||
+        (it.title && it.title.toLowerCase().includes(query))
+    );
   }, [items, search]);
 
   return (
@@ -186,7 +191,7 @@ export default function HiddenHotspotMenu({ onSelectItem }: HiddenHotspotMenuPro
       {isOpen && (
         <div
           ref={overlayRef}
-          className="fixed z-[10000] bottom-10 left-3 w-72 sm:w-80 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl p-3 text-zinc-200 animate-in fade-in zoom-in-95 duration-150"
+          className="fixed z-[10000] bottom-10 left-3 w-80 sm:w-[440px] max-w-[calc(100vw-24px)] bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl p-3 text-zinc-200 animate-in fade-in zoom-in-95 duration-150"
         >
           {level === 'pin' && (
             <form onSubmit={handleVerifyPin} className="flex flex-col gap-2.5 p-1">
@@ -233,38 +238,49 @@ export default function HiddenHotspotMenu({ onSelectItem }: HiddenHotspotMenuPro
 
           {level === 2 && (
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pb-1 border-b border-zinc-800/80">
                 <button
                   type="button"
-                  onClick={() => setLevel(1)}
-                  className="p-1 px-2 bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white transition-colors"
+                  onClick={() => {
+                    setLevel(1);
+                    setSearch('');
+                  }}
+                  className="p-1 px-2.5 bg-zinc-950 hover:bg-zinc-800 active:bg-zinc-700 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1 shrink-0"
                   title="Back"
                 >
-                  ←
+                  <span>←</span>
                 </button>
-                {items.length > 12 && (
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search..."
-                    autoFocus
-                    className="flex-1 px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded text-xs font-mono text-zinc-200 focus:outline-none focus:border-zinc-700 placeholder-zinc-600"
-                  />
-                )}
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search experiment or number..."
+                  autoFocus
+                  className="flex-1 px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded text-xs font-mono text-zinc-200 focus:outline-none focus:border-zinc-700 placeholder-zinc-600"
+                />
               </div>
 
-              <div className="grid grid-cols-3 gap-1.5 max-h-56 overflow-y-auto p-0.5">
+              <div className="flex flex-col gap-1.5 max-h-80 overflow-y-auto p-0.5 pr-1">
                 {filteredItems.map((it) => (
                   <button
                     key={it.id}
                     type="button"
                     onClick={() => handleSelectExp(it.id)}
-                    className="py-1.5 px-1 bg-zinc-950 hover:bg-zinc-800 active:bg-zinc-700 border border-zinc-800 hover:border-zinc-700 rounded text-[11px] font-mono text-zinc-300 hover:text-white text-center transition-colors truncate"
+                    className="w-full p-2 bg-zinc-950/80 hover:bg-zinc-800 active:bg-zinc-750 border border-zinc-800/80 hover:border-zinc-700 rounded-lg text-left transition-all duration-150 flex items-start gap-2.5 group"
                   >
-                    EXP-{it.expNo}
+                    <span className="shrink-0 px-2 py-0.5 bg-zinc-800/90 group-hover:bg-zinc-700 border border-zinc-700/60 rounded font-mono text-[11px] font-semibold text-zinc-300 group-hover:text-white transition-colors">
+                      EXP-{it.expNo}
+                    </span>
+                    <span className="text-xs font-medium text-zinc-300 group-hover:text-zinc-100 transition-colors leading-snug break-words pt-0.5">
+                      {it.title || `EXP-${it.expNo}`}
+                    </span>
                   </button>
                 ))}
+                {filteredItems.length === 0 && (
+                  <div className="py-6 text-center text-xs text-zinc-500">
+                    No experiments found
+                  </div>
+                )}
               </div>
             </div>
           )}
