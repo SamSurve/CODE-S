@@ -1,26 +1,4 @@
-export type SupportedLanguage = 'c' | 'cpp';
-
-export interface Practical {
-  id: string;
-  expNumber: string;
-  title: string;
-  category: 'Sorting' | 'Searching' | 'Dynamic Programming' | 'Graph Algorithms' | 'Backtracking' | 'Branch & Bound' | 'String Matching' | 'Divide & Conquer';
-  paradigm: 'Divide & Conquer' | 'Dynamic Programming' | 'Greedy' | 'Backtracking' | 'Branch & Bound' | 'Brute Force';
-  aim: string;
-  algorithm: string[];
-  timeComplexity: {
-    best: string;
-    average: string;
-    worst: string;
-  };
-  spaceComplexity: string;
-  author: string;
-  sourceCode: string;
-  language: SupportedLanguage;
-  sampleInput: string;
-  sampleOutput: string;
-  description: string;
-}
+export type SupportedLanguage = 'c' | 'cpp' | 'java' | 'html' | 'javascript';
 
 export interface ExecutionRequest {
   source_code: string;

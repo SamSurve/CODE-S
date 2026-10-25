@@ -11,15 +11,15 @@ interface SettingsModalProps {
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [config, setConfig] = useState<CustomRunnerConfig>({
-    apiUrl: 'https://ce.judge0.com',
+    apiUrl: '',
     apiKey: '',
-    apiHost: 'judge0-ce.p.rapidapi.com',
+    apiHost: '',
     authToken: ''
   });
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('aoa_runner_config');
+    const saved = localStorage.getItem('compiler_runner_config');
     if (saved) {
       try {
         setConfig(JSON.parse(saved));
@@ -32,7 +32,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   if (!isOpen) return null;
 
   const handleSave = () => {
-    localStorage.setItem('aoa_runner_config', JSON.stringify(config));
+    localStorage.setItem('compiler_runner_config', JSON.stringify(config));
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
@@ -42,13 +42,13 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   const handleReset = () => {
     const defaultConfig: CustomRunnerConfig = {
-      apiUrl: 'https://ce.judge0.com',
+      apiUrl: '',
       apiKey: '',
-      apiHost: 'judge0-ce.p.rapidapi.com',
+      apiHost: '',
       authToken: ''
     };
     setConfig(defaultConfig);
-    localStorage.removeItem('aoa_runner_config');
+    localStorage.removeItem('compiler_runner_config');
   };
 
   return (
@@ -78,7 +78,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <div className="p-3.5 rounded-xl bg-blue-950/30 border border-blue-800/40 text-blue-300 text-xs leading-relaxed flex gap-2.5">
             <Server className="w-4 h-4 shrink-0 mt-0.5 text-blue-400" />
             <div>
-              <span className="font-semibold text-blue-200">Default Sandbox:</span> By default, this app connects through the server to the public sandboxed compiler engine endpoint. You can specify a custom self-hosted or RapidAPI endpoint below.
+              <span className="font-semibold text-blue-200">Default Sandbox:</span> By default, this app connects to the default cloud sandboxed compiler engine. You can specify a custom self-hosted or proxy endpoint below.
             </div>
           </div>
 
@@ -91,17 +91,14 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 type="text"
                 value={config.apiUrl || ''}
                 onChange={(e) => setConfig({ ...config, apiUrl: e.target.value })}
-                placeholder="https://ce.judge0.com"
+                placeholder="Leave empty for default server engine"
                 className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-blue-500 text-xs font-mono"
               />
-              <span className="text-[11px] text-zinc-500 mt-1 block">
-                Public CE: <code className="text-zinc-400">https://ce.judge0.com</code> or RapidAPI: <code className="text-zinc-400">https://judge0-ce.p.rapidapi.com</code>
-              </span>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                RapidAPI Key (Optional)
+                API Key (Optional)
               </label>
               <div className="relative">
                 <input
@@ -117,26 +114,26 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                RapidAPI Host (If using RapidAPI)
+                API Host (Optional)
               </label>
               <input
                 type="text"
                 value={config.apiHost || ''}
                 onChange={(e) => setConfig({ ...config, apiHost: e.target.value })}
-                placeholder="judge0-ce.p.rapidapi.com"
+                placeholder="Custom API Host header"
                 className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-blue-500 text-xs font-mono"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Auth Token (For self-hosted instances)
+                Auth Token (Optional)
               </label>
               <input
                 type="password"
                 value={config.authToken || ''}
                 onChange={(e) => setConfig({ ...config, authToken: e.target.value })}
-                placeholder="X-Auth-Token (optional)"
+                placeholder="X-Auth-Token"
                 className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-blue-500 text-xs font-mono"
               />
             </div>

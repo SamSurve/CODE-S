@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { Upload, FileCode, CheckCircle2, AlertCircle, X, ArrowRight } from 'lucide-react';
 import { SupportedLanguage } from '../types';
 
@@ -9,10 +8,10 @@ interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCodeLoaded?: (code: string, language: SupportedLanguage, filename: string) => void;
+  onUpload?: (code: string, filename?: string) => void;
 }
 
-export default function UploadModal({ isOpen, onClose, onCodeLoaded }: UploadModalProps) {
-  const router = useRouter();
+export default function UploadModal({ isOpen, onClose, onCodeLoaded, onUpload }: UploadModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileContent, setFileContent] = useState<string>('');
   const [fileName, setFileName] = useState<string>('');
@@ -31,8 +30,14 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded }: UploadMod
       detectedLang = 'cpp';
     } else if (name.endsWith('.c') || name.endsWith('.h')) {
       detectedLang = 'c';
+    } else if (name.endsWith('.java')) {
+      detectedLang = 'java';
+    } else if (name.endsWith('.html') || name.endsWith('.htm')) {
+      detectedLang = 'html';
+    } else if (name.endsWith('.js') || name.endsWith('.jsx')) {
+      detectedLang = 'javascript';
     } else {
-      setError('Please upload a valid C (.c) or C++ (.cpp) source file.');
+      setError('Please upload a supported code file (.c, .cpp, .java, .html, .js).');
       return;
     }
 
@@ -71,20 +76,16 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded }: UploadMod
     setIsDragging(false);
   };
 
-  const handleOpenInCompiler = () => {
+  const handleApply = () => {
     if (!fileContent) return;
 
     if (onCodeLoaded) {
       onCodeLoaded(fileContent, language, fileName);
-      onClose();
-    } else {
-      // Save to localStorage for compiler page to pick up
-      localStorage.setItem('aoa_custom_code', fileContent);
-      localStorage.setItem('aoa_custom_lang', language);
-      localStorage.setItem('aoa_custom_filename', fileName);
-      onClose();
-      router.push('/compiler?source=upload');
     }
+    if (onUpload) {
+      onUpload(fileContent, fileName);
+    }
+    onClose();
   };
 
   return (
@@ -97,8 +98,8 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded }: UploadMod
               <Upload className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-zinc-100">Upload C / C++ Source Code</h2>
-              <p className="text-xs text-zinc-400">Import your local practical or algorithm file directly</p>
+              <h2 className="text-lg font-semibold text-zinc-100">Upload Source Code</h2>
+              <p className="text-xs text-zinc-400">Import your local code file directly</p>
             </div>
           </div>
           <button
@@ -126,7 +127,7 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded }: UploadMod
             <input
               ref={fileInputRef}
               type="file"
-              accept=".c,.cpp,.cc,.cxx,.h"
+              accept=".c,.cpp,.cc,.cxx,.h,.java,.html,.js"
               className="hidden"
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
@@ -140,10 +141,10 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded }: UploadMod
               </div>
               <div>
                 <p className="text-sm font-medium text-zinc-200">
-                  Click to select file or drag and drop
+                  Click to select or drag and drop a source file
                 </p>
                 <p className="text-xs text-zinc-500 mt-1">
-                  Supports C source (<code className="text-zinc-300 font-mono">.c</code>) and C++ source (<code className="text-zinc-300 font-mono">.cpp</code>) up to 512 KB
+                  Supported formats: C, C++, Java, HTML, JS (up to 512 KB)
                 </p>
               </div>
             </div>
@@ -151,8 +152,8 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded }: UploadMod
 
           {/* Error Message */}
           {error && (
-            <div className="flex items-center gap-2 p-3 text-sm text-red-300 bg-red-950/40 border border-red-800/60 rounded-xl">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+            <div className="flex items-center gap-2 p-3 text-xs text-red-400 bg-red-950/40 border border-red-800/60 rounded-xl">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -161,20 +162,16 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded }: UploadMod
           {fileContent && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs text-zinc-400">
-                <div className="flex items-center gap-2 font-mono">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span className="text-zinc-200 font-medium">{fileName}</span>
-                  <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 uppercase font-semibold">
-                    {language}
-                  </span>
-                </div>
-                <span>
-                  {fileContent.split('\n').length} lines · {Math.round(fileContent.length / 1024 * 10) / 10} KB
+                <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Loaded: {fileName}
+                </span>
+                <span className="font-mono text-zinc-500">
+                  {fileContent.split('\n').length} lines · {language.toUpperCase()}
                 </span>
               </div>
-
-              <div className="relative rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 font-mono text-xs text-zinc-300 max-h-48 overflow-y-auto leading-relaxed select-none">
-                <pre>{fileContent.slice(0, 800)}{fileContent.length > 800 ? '\n\n... (preview truncated)' : ''}</pre>
+              <div className="max-h-48 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs text-zinc-300">
+                <pre>{fileContent.slice(0, 2000)}{fileContent.length > 2000 ? '\n... (truncated preview)' : ''}</pre>
               </div>
             </div>
           )}
@@ -184,20 +181,16 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded }: UploadMod
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-zinc-800 bg-zinc-950/50">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
           >
             Cancel
           </button>
           <button
-            onClick={handleOpenInCompiler}
+            onClick={handleApply}
             disabled={!fileContent}
-            className={`flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-xl transition-all ${
-              fileContent
-                ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20'
-                : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-            }`}
+            className="flex items-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 rounded-xl shadow-md transition-all active:scale-95"
           >
-            <span>Open in Compiler</span>
+            <span>Load into Editor</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

@@ -8,24 +8,30 @@ import {
   Check,
   Download,
   Upload,
-  Code2,
   FileCode,
   Loader2,
   Scan
 } from 'lucide-react';
 import { SupportedLanguage } from '../types';
 
-interface CodeEditorProps {
+export interface EditorFile {
+  name: string;
   code: string;
-  onChange: (value: string) => void;
+}
+
+interface CodeEditorProps {
+  files?: EditorFile[];
+  activeFileIndex?: number;
+  onActiveFileIndexChange?: (idx: number) => void;
+  code?: string;
+  onChange?: (value: string) => void;
   language: SupportedLanguage;
   onLanguageChange: (lang: SupportedLanguage) => void;
   onRun: () => void;
   onReset: () => void;
   isLoading: boolean;
   onUploadClick: () => void;
-  activePracticalTitle?: string;
-  activePracticalExpNumber?: string;
+  isRunDisabled?: boolean;
 }
 
 // Strict shared metrics across Gutter, Highlight layer, and Textarea
@@ -44,12 +50,12 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;');
 }
 
-// Syntax highlighter matching VS Code Dark+ theme
-function highlightCCode(code: string): string {
+// Fast regex-based syntax highlighter matching VS Code Dark+ theme
+function highlightSyntax(code: string): string {
   if (!code) return '';
 
   const regex =
-    /(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|(#\s*[a-zA-Z_]\w*(?:\s*<[^>]+>|\s*"(?:\\.|[^"\\])*")?)|(\b(?:int|char|void|float|double|long|short|unsigned|signed|const|static|typedef|struct|sizeof|Node|bool|auto)\b)|(\b(?:if|else|for|while|do|return|break|continue|switch|case|default|goto)\b)|(\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?[fFulL]*\b)|(\b[a-zA-Z_]\w*\s*(?=\())|(\b[a-zA-Z_]\w*\b)|([{}()[\];,.<>+\-*\/%&|^!=?:~]+)/g;
+    /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|<!--[\s\S]*?-->)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`[\s\S]*?`)|(#\s*[a-zA-Z_]\w*(?:\s*<[^>]+>|\s*"(?:\\.|[^"\\])*")?)|(\b(?:int|char|void|float|double|long|short|unsigned|signed|const|static|typedef|struct|sizeof|Node|bool|auto|public|private|protected|class|interface|extends|implements|new|import|package|abstract|final|super|this|throws|throw|try|catch|finally|boolean|byte|null|true|false|let|var|const|function|return|if|else|for|while|do|break|continue|switch|case|default|enum|typeof|instanceof)\b)|(@[a-zA-Z_]\w*)|(\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?[fFulL]*\b)|(\b[a-zA-Z_]\w*\s*(?=\())|(\b[a-zA-Z_]\w*\b)|([{}()[\];,.<>+\-*\/%&|^!=?:~]+)/g;
 
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -63,34 +69,38 @@ function highlightCCode(code: string): string {
     const [
       full,
       comment,
-      stringLit,
-      preproc,
-      typeKw,
-      controlKw,
-      numberLit,
-      funcCall,
-      identifier,
-      operator
+      str,
+      preprocessor,
+      keyword,
+      annotation,
+      num,
+      func,
+      ident,
+      punct
     ] = match;
 
     if (comment) {
-      result += `<span style="color:#6a9955;font-style:italic;">${escapeHtml(comment)}</span>`;
-    } else if (stringLit) {
-      result += `<span style="color:#ce9178;">${escapeHtml(stringLit)}</span>`;
-    } else if (preproc) {
-      result += `<span style="color:#c586c0;font-weight:600;">${escapeHtml(preproc)}</span>`;
-    } else if (typeKw) {
-      result += `<span style="color:#569cd6;font-weight:600;">${escapeHtml(typeKw)}</span>`;
-    } else if (controlKw) {
-      result += `<span style="color:#c586c0;font-weight:600;">${escapeHtml(controlKw)}</span>`;
-    } else if (numberLit) {
-      result += `<span style="color:#b5cea8;">${escapeHtml(numberLit)}</span>`;
-    } else if (funcCall) {
-      result += `<span style="color:#dcdcaa;">${escapeHtml(funcCall)}</span>`;
-    } else if (identifier) {
-      result += `<span style="color:#9cdcfe;">${escapeHtml(identifier)}</span>`;
-    } else if (operator) {
-      result += `<span style="color:#d4d4d4;">${escapeHtml(operator)}</span>`;
+      result += `<span class="text-[#6A9955] italic">${escapeHtml(comment)}</span>`;
+    } else if (str) {
+      result += `<span class="text-[#CE9178]">${escapeHtml(str)}</span>`;
+    } else if (preprocessor) {
+      result += `<span class="text-[#C586C0] font-semibold">${escapeHtml(preprocessor)}</span>`;
+    } else if (annotation) {
+      result += `<span class="text-[#DCDCAA] font-medium">${escapeHtml(annotation)}</span>`;
+    } else if (keyword) {
+      result += `<span class="text-[#569CD6] font-semibold">${escapeHtml(keyword)}</span>`;
+    } else if (num) {
+      result += `<span class="text-[#B5CEA8]">${escapeHtml(num)}</span>`;
+    } else if (func) {
+      result += `<span class="text-[#DCDCAA]">${escapeHtml(func)}</span>`;
+    } else if (ident) {
+      if (ident === 'printf' || ident === 'scanf' || ident === 'main' || ident === 'System' || ident === 'Scanner') {
+        result += `<span class="text-[#4EC9B0]">${escapeHtml(ident)}</span>`;
+      } else {
+        result += `<span class="text-[#9CDCFE]">${escapeHtml(ident)}</span>`;
+      }
+    } else if (punct) {
+      result += `<span class="text-[#D4D4D4]">${escapeHtml(punct)}</span>`;
     } else {
       result += escapeHtml(full);
     }
@@ -102,64 +112,69 @@ function highlightCCode(code: string): string {
     result += escapeHtml(code.substring(lastIndex));
   }
 
-  // Preserve trailing newline so trailing blank line does not collapse
-  if (code.endsWith('\n')) {
-    result += ' ';
-  }
-
   return result;
 }
 
 export default function CodeEditor({
-  code,
-  onChange,
+  files,
+  activeFileIndex = 0,
+  onActiveFileIndexChange,
+  code: propCode,
+  onChange: propOnChange,
   language,
   onLanguageChange,
-  onReset,
   onRun,
+  onReset,
   isLoading,
   onUploadClick,
-  activePracticalTitle,
-  activePracticalExpNumber
+  isRunDisabled = false
 }: CodeEditorProps) {
+  // Determine active code
+  const hasMultipleFiles = Boolean(files && files.length > 1);
+  const currentFile = files ? files[activeFileIndex] : null;
+  const activeCode = currentFile ? currentFile.code : (propCode ?? '');
+
+  const handleCodeChange = (newVal: string) => {
+    if (propOnChange) {
+      propOnChange(newVal);
+    }
+  };
+
   const [copied, setCopied] = useState(false);
   const [fontSize, setFontSize] = useState<number>(13);
-  const [lineHeight, setLineHeight] = useState<number>(20);
-  const [isAutoFit, setIsAutoFit] = useState<boolean>(true);
+  const [lineHeight, setLineHeight] = useState<number>(18);
+  const [isAutoFit, setIsAutoFit] = useState<boolean>(false);
 
-  const editorCanvasRef = useRef<HTMLDivElement>(null);
-  const editorBodyRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const highlightRef = useRef<HTMLPreElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
-  const isAutoFitRef = useRef<boolean>(true);
+  const highlightRef = useRef<HTMLPreElement>(null);
+  const editorBodyRef = useRef<HTMLDivElement>(null);
+  const editorCanvasRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    isAutoFitRef.current = isAutoFit;
-  }, [isAutoFit]);
+  // Split lines for line numbers
+  const lines = useMemo(() => activeCode.split('\n'), [activeCode]);
 
-  // Synchronize scroll from editor body container to gutter
-  const handleBodyScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const st = e.currentTarget.scrollTop;
-    if (gutterRef.current) {
-      gutterRef.current.scrollTop = st;
+  // Syntax highlighted HTML
+  const highlightedHtml = useMemo(() => {
+    return highlightSyntax(activeCode) + '\n';
+  }, [activeCode]);
+
+  // Synchronize gutter with editor body scroll
+  const handleBodyScroll = useCallback(() => {
+    if (!editorBodyRef.current || !gutterRef.current) return;
+    gutterRef.current.scrollTop = editorBodyRef.current.scrollTop;
+  }, []);
+
+  const handleTextareaScroll = useCallback(() => {
+    if (!textareaRef.current || !editorBodyRef.current) return;
+    if (editorBodyRef.current.scrollTop !== textareaRef.current.scrollTop) {
+      editorBodyRef.current.scrollTop = textareaRef.current.scrollTop;
     }
-  };
-
-  // Synchronize scroll from textarea to gutter and editor body
-  const handleTextareaScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
-    const st = e.currentTarget.scrollTop;
-    const sl = e.currentTarget.scrollLeft;
-    if (gutterRef.current) {
-      gutterRef.current.scrollTop = st;
+    if (editorBodyRef.current.scrollLeft !== textareaRef.current.scrollLeft) {
+      editorBodyRef.current.scrollLeft = textareaRef.current.scrollLeft;
     }
-    if (editorBodyRef.current) {
-      editorBodyRef.current.scrollTop = st;
-      editorBodyRef.current.scrollLeft = sl;
-    }
-  };
+  }, []);
 
-  // Reset scroll offsets for all layers to 0
   const resetScroll = useCallback(() => {
     if (editorBodyRef.current) {
       editorBodyRef.current.scrollTop = 0;
@@ -169,172 +184,144 @@ export default function CodeEditor({
       textareaRef.current.scrollTop = 0;
       textareaRef.current.scrollLeft = 0;
     }
-    if (highlightRef.current) {
-      highlightRef.current.scrollTop = 0;
-      highlightRef.current.scrollLeft = 0;
-    }
     if (gutterRef.current) {
       gutterRef.current.scrollTop = 0;
     }
   }, []);
 
-  // Calculate fitting font size and line height
-  const calculateAndApplyFit = useCallback(() => {
+  // Fit code into visible canvas
+  const handleFitCode = useCallback(() => {
     if (!editorCanvasRef.current) return;
+
     const canvasHeight = editorCanvasRef.current.clientHeight;
-    if (canvasHeight <= 0) return;
+    const availableHeight = canvasHeight - PADDING_TOP - PADDING_BOTTOM - 8;
+    const totalLines = lines.length;
 
-    const lineCount = (code || '').split('\n').length || 1;
-    const totalPadding = PADDING_TOP + PADDING_BOTTOM;
-    const usableHeight = Math.max(60, canvasHeight - totalPadding);
+    if (totalLines <= 0 || availableHeight <= 0) return;
 
-    // Calculate line height needed so all lines fit vertically
-    const targetLineHeight = Math.floor(usableHeight / lineCount);
+    let targetLineHeight = Math.floor(availableHeight / totalLines);
+    targetLineHeight = Math.max(12, Math.min(22, targetLineHeight));
+    const targetFontSize = Math.max(9, Math.min(16, Math.round(targetLineHeight * 0.72)));
 
-    // Clamp line height between 15px (crisp legible minimum) and 22px (comfortable maximum)
-    const fitLineHeight = Math.min(22, Math.max(15, targetLineHeight));
-
-    // Calculate proportional font size between 10px and 14px
-    const fitFontSize = Math.min(14, Math.max(10, Math.round(fitLineHeight * 0.65)));
-
-    setLineHeight(fitLineHeight);
-    setFontSize(fitFontSize);
-
-    // Always reset scroll positions after layout recalculation
-    requestAnimationFrame(() => {
-      resetScroll();
-    });
-  }, [code, resetScroll]);
-
-  // Auto-fit whenever active practical changes
-  useEffect(() => {
+    setFontSize(targetFontSize);
+    setLineHeight(targetLineHeight);
     setIsAutoFit(true);
-    isAutoFitRef.current = true;
-    calculateAndApplyFit();
     resetScroll();
-  }, [activePracticalTitle, calculateAndApplyFit, resetScroll]);
+  }, [lines.length, resetScroll]);
 
-  // ResizeObserver on canvas
-  useEffect(() => {
-    calculateAndApplyFit();
-
-    const canvas = editorCanvasRef.current;
-    if (!canvas || typeof ResizeObserver === 'undefined') return;
-
-    const observer = new ResizeObserver(() => {
-      if (isAutoFitRef.current) {
-        calculateAndApplyFit();
-      }
-    });
-
-    observer.observe(canvas);
-
-    const handleWindowResize = () => {
-      if (isAutoFitRef.current) {
-        calculateAndApplyFit();
-      }
-    };
-    window.addEventListener('resize', handleWindowResize);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', handleWindowResize);
-    };
-  }, [calculateAndApplyFit]);
-
-  // One-click Fit Code button
-  const handleFitCode = () => {
-    setIsAutoFit(true);
-    isAutoFitRef.current = true;
-    calculateAndApplyFit();
-    resetScroll();
-  };
-
-  // Zoom controls: adjusts font-size and scales line-height equally for all layers
-  const handleZoomIn = () => {
-    setIsAutoFit(false);
-    isAutoFitRef.current = false;
-    const nextSize = Math.min(18, fontSize + 1);
-    setFontSize(nextSize);
-    setLineHeight(Math.round(nextSize * 1.55));
-  };
-
-  const handleZoomOut = () => {
-    setIsAutoFit(false);
-    isAutoFitRef.current = false;
-    const nextSize = Math.max(10, fontSize - 1);
-    setFontSize(nextSize);
-    setLineHeight(Math.round(nextSize * 1.55));
-  };
-
-  // Tab key inserts 4 spaces, Ctrl+Enter runs code
+  // Keyboard shortcut Ctrl+Enter / Cmd+Enter
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
-      if (!isLoading) {
+      if (!isLoading && !isRunDisabled) {
         onRun();
       }
-      return;
-    }
-
-    if (e.key === 'Tab') {
+    } else if (e.key === 'Tab') {
       e.preventDefault();
       const textarea = textareaRef.current;
       if (!textarea) return;
 
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
-      const spaces = '    ';
+      const val = textarea.value;
 
-      const updatedCode = code.substring(0, start) + spaces + code.substring(end);
-      onChange(updatedCode);
+      const updated = val.substring(0, start) + '    ' + val.substring(end);
+      handleCodeChange(updated);
 
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = start + spaces.length;
-      }, 0);
+      requestAnimationFrame(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 4;
+      });
     }
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(activeCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
-    const ext = language === 'cpp' ? 'cpp' : 'c';
-    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+    let extension = 'c';
+    if (language === 'cpp') extension = 'cpp';
+    else if (language === 'java') extension = 'java';
+    else if (language === 'html') extension = 'html';
+    else if (language === 'javascript') extension = 'js';
+
+    const defaultName = currentFile?.name || (language === 'java' ? 'Main.java' : `main.${extension}`);
+    const blob = new Blob([activeCode], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `solution.${ext}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = defaultName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  const fileName = language === 'cpp' ? 'main.cpp' : 'main.c';
-  const lines = (code || '').split('\n');
+  const handleZoomIn = () => {
+    setIsAutoFit(false);
+    setFontSize((prev) => Math.min(prev + 1, 24));
+    setLineHeight((prev) => Math.min(prev + 2, 34));
+  };
 
-  // Compute syntax highlighted HTML (VS Code Dark+)
-  const highlightedHtml = useMemo(() => highlightCCode(code), [code]);
+  const handleZoomOut = () => {
+    setIsAutoFit(false);
+    setFontSize((prev) => Math.max(prev - 1, 9));
+    setLineHeight((prev) => Math.max(prev - 2, 12));
+  };
+
+  // Generic tab name when single file
+  const genericFileName = useMemo(() => {
+    if (currentFile?.name) return currentFile.name;
+    switch (language) {
+      case 'java':
+        return 'Main.java';
+      case 'cpp':
+        return 'main.cpp';
+      case 'html':
+        return 'index.html';
+      case 'javascript':
+        return 'main.js';
+      default:
+        return 'main.c';
+    }
+  }, [currentFile, language]);
 
   return (
-    <div className="flex flex-col h-full bg-[#121214] border border-zinc-800 rounded-xl overflow-hidden shadow-2xl select-text">
-      {/* Editor Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-1.5 px-3 py-1.5 bg-[#18181b] border-b border-zinc-800 shrink-0">
-        {/* Left: File Tab & Language Selector */}
+    <div className="flex flex-col h-full bg-[#121214] text-zinc-100 overflow-hidden">
+      {/* Top Controls Toolbar */}
+      <div className="flex items-center justify-between px-3 h-10 border-b border-zinc-800 bg-[#18181b] shrink-0">
+        {/* Left: File name / File tabs + Language selector */}
         <div className="flex items-center gap-2">
-          {/* File Tab */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#121214] border border-zinc-700/80 text-xs font-mono text-zinc-100 font-semibold shadow-inner">
-            <FileCode className="w-3.5 h-3.5 text-blue-400" />
-            <span>{fileName}</span>
-          </div>
+          {hasMultipleFiles ? (
+            /* Multi-file tabs */
+            <div className="flex items-center gap-1 overflow-x-auto max-w-[280px] sm:max-w-[420px] scrollbar-none py-1">
+              {files!.map((f, idx) => (
+                <button
+                  key={f.name}
+                  onClick={() => onActiveFileIndexChange && onActiveFileIndexChange(idx)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md transition-colors border ${
+                    activeFileIndex === idx
+                      ? 'bg-zinc-800 text-white border-zinc-700 font-semibold shadow-sm'
+                      : 'bg-zinc-950/40 text-zinc-400 hover:text-zinc-200 border-zinc-800/80 hover:bg-zinc-900'
+                  }`}
+                >
+                  <FileCode className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="font-mono text-[11px]">{f.name}</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            /* Single generic file tab */
+            <div className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-md">
+              <FileCode className="w-3.5 h-3.5 text-blue-400" />
+              <span className="font-mono text-xs">{genericFileName}</span>
+            </div>
+          )}
 
           {/* Language Selector */}
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-950 border border-zinc-800 text-xs">
-            <Code2 className="w-3.5 h-3.5 text-zinc-400" />
+          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-md px-2 py-1 text-xs">
             <select
               value={language}
               onChange={(e) => onLanguageChange(e.target.value as SupportedLanguage)}
@@ -346,20 +333,22 @@ export default function CodeEditor({
               <option value="cpp" className="bg-zinc-900 text-zinc-200">
                 C++ (G++ 9.2.0)
               </option>
+              <option value="java" className="bg-zinc-900 text-zinc-200">
+                Java (OpenJDK 13)
+              </option>
+              <option value="html" className="bg-zinc-900 text-zinc-200">
+                HTML / CSS / JS
+              </option>
+              <option value="javascript" className="bg-zinc-900 text-zinc-200">
+                JavaScript
+              </option>
             </select>
           </div>
-
-          {activePracticalTitle && (
-            <span className="hidden xl:inline-block text-[11px] text-zinc-400 font-sans truncate max-w-[220px]">
-              {activePracticalExpNumber ? `${activePracticalExpNumber}: ` : ''}
-              {activePracticalTitle}
-            </span>
-          )}
         </div>
 
         {/* Right: Actions and Primary RUN Button */}
         <div className="flex items-center gap-1.5">
-          {/* One-Click "Fit Code" Button */}
+          {/* Fit Code */}
           <button
             onClick={handleFitCode}
             className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md border transition-all ${
@@ -367,17 +356,17 @@ export default function CodeEditor({
                 ? 'bg-blue-600/20 text-blue-300 border-blue-500/50 font-semibold shadow-sm'
                 : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border-zinc-800'
             }`}
-            title="Auto-fit complete code into visible editor (No vertical scrolling)"
+            title="Auto-fit code into visible editor"
           >
             <Scan className="w-3.5 h-3.5 text-blue-400" />
             <span className="hidden sm:inline">Fit Code</span>
           </button>
 
-          {/* Upload Button */}
+          {/* Upload */}
           <button
             onClick={onUploadClick}
             className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors"
-            title="Upload .c or .cpp file"
+            title="Upload source file"
           >
             <Upload className="w-3.5 h-3.5 text-zinc-400" />
             <span className="hidden sm:inline">Upload</span>
@@ -396,7 +385,7 @@ export default function CodeEditor({
               </>
             ) : (
               <>
-                <Copy className="w-3.5 h-3.5 text-zinc-400" />
+                <Copy className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Copy</span>
               </>
             )}
@@ -423,12 +412,14 @@ export default function CodeEditor({
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
-          {/* Prominent Blue RUN Button */}
+          {/* Prominent RUN Button */}
           <button
             onClick={onRun}
-            disabled={isLoading}
+            disabled={isLoading || isRunDisabled}
             className={`flex items-center gap-1.5 px-3.5 py-1 text-xs font-bold rounded-md shadow-md transition-all active:scale-95 ${
-              isLoading
+              isRunDisabled
+                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
+                : isLoading
                 ? 'bg-blue-600/70 text-blue-200 cursor-wait'
                 : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30'
             }`}
@@ -448,7 +439,7 @@ export default function CodeEditor({
         </div>
       </div>
 
-      {/* Editor Canvas: Gutter + In-flow Highlight Layer + Textarea (VS Code Style) */}
+      {/* Editor Canvas */}
       <div
         ref={editorCanvasRef}
         className="relative flex-1 min-h-0 bg-[#121214] flex overflow-hidden cursor-text"
@@ -481,13 +472,13 @@ export default function CodeEditor({
           ))}
         </div>
 
-        {/* Editor Body: Overlay Container for In-Flow Highlight <pre> and <textarea> */}
+        {/* Editor Body */}
         <div
           ref={editorBodyRef}
           onScroll={handleBodyScroll}
           className="flex-1 relative h-full min-h-0 overflow-auto"
         >
-          {/* Layer 2: In-Flow Syntax Highlighted <pre> (Provides natural content height, prevents collapse) */}
+          {/* Layer 2: In-Flow Syntax Highlighted <pre> */}
           <pre
             ref={highlightRef}
             aria-hidden="true"
@@ -509,18 +500,18 @@ export default function CodeEditor({
             dangerouslySetInnerHTML={{ __html: highlightedHtml }}
           />
 
-          {/* Layer 3: Controlled Interactive <textarea> Layer (Takes exact size of in-flow <pre>) */}
+          {/* Layer 3: Controlled Interactive <textarea> Layer */}
           <textarea
             ref={textareaRef}
-            value={code}
-            onChange={(e) => onChange(e.target.value)}
+            value={activeCode}
+            onChange={(e) => handleCodeChange(e.target.value)}
             onScroll={handleTextareaScroll}
             onKeyDown={handleKeyDown}
             spellCheck={false}
             autoCapitalize="off"
             autoComplete="off"
             autoCorrect="off"
-            placeholder="// Type or paste C/C++ code here..."
+            placeholder="// Type or paste code here..."
             className="absolute inset-0 w-full h-full m-0 bg-transparent text-transparent caret-white font-mono focus:outline-none resize-none whitespace-pre selection:bg-blue-600/40 tab-4"
             style={{
               fontFamily: FONT_FAMILY,
@@ -545,7 +536,7 @@ export default function CodeEditor({
       {/* Footer Info Bar */}
       <div className="flex items-center justify-between px-3 py-1 bg-[#18181b] border-t border-zinc-800 text-[11px] text-zinc-500 font-mono shrink-0">
         <div className="flex items-center gap-2.5">
-          <span>{language.toUpperCase()} GCC</span>
+          <span>{language.toUpperCase()}</span>
           <span>Lines: {lines.length}</span>
           <span className="hidden sm:inline">
             Font: {fontSize}px / {lineHeight}px

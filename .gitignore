@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# imported practicals and temporary data
+_import/
+JAVA_Practicals_txt/
+JAVA CODES/

@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     if (!language_id || typeof language_id !== 'number') {
       return NextResponse.json(
         {
-          error: 'Valid language_id is required (e.g. 50 for C, 54 for C++).',
+          error: 'Valid language_id is required (e.g. 50 for C, 54 for C++, 62 for Java).',
           status: { id: 13, description: 'Internal Error' }
         },
         { status: 400 }
@@ -77,11 +77,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Terminal Echo Simulation:
-    // Prepend a hidden C/C++ shim that intercepts stdin using a fopencookie() stream.
-    // Each line read from stdin is automatically echoed to stdout (fd 1) with flushed output,
-    // exactly matching an interactive terminal session where typed inputs appear on the terminal.
     let codeToSend = source_code;
     if ((language_id === 50 || language_id === 54) && !source_code.includes('echo_cookie_funcs')) {
+      // C / C++ stdin echo shim using fopencookie
       const fileName = language_id === 54 ? 'main.cpp' : 'main.c';
       const shim = `
 #ifndef _GNU_SOURCE
@@ -120,10 +118,10 @@ static ssize_t echo_cookie_read(void *cookie, char *buf, size_t size) {
         }
     }
     size_t avail = echo_line_len - echo_line_pos;
-    size_t to_copy = size < avail ? size : avail;
-    memcpy(buf, echo_line_buf + echo_line_pos, to_copy);
-    echo_line_pos += to_copy;
-    return to_copy;
+    size_t toCopy = size < avail ? size : avail;
+    memcpy(buf, echo_line_buf + echo_line_pos, toCopy);
+    echo_line_pos += toCopy;
+    return toCopy;
 }
 
 static cookie_io_functions_t echo_cookie_funcs = {
@@ -147,6 +145,83 @@ __attribute__((constructor)) static void init_echo_stdin(void) {
 #line 1 "${fileName}"
 `;
       codeToSend = shim + '\n' + source_code;
+    } else if ((language_id === 62 || language_id === 91) && !source_code.includes('__TerminalEchoInputStream')) {
+      // Java execution on Judge0:
+      // 1. Rename the class containing main() to Main everywhere in the source
+      const mainIdx = codeToSend.search(/\bpublic\s+static\s+void\s+main\b/);
+      if (mainIdx !== -1) {
+        const beforeMain = codeToSend.slice(0, mainIdx);
+        const classMatches = [...beforeMain.matchAll(/(?:public\s+)?class\s+([A-Za-z0-9_$]+)/g)];
+        if (classMatches.length > 0) {
+          const mainClassName = classMatches[classMatches.length - 1][1];
+          if (mainClassName && mainClassName !== 'Main') {
+            const classRegex = new RegExp(`("(?:\\\\.|[^"\\\\])*"|'(?:\\\\.|[^'\\\\])*')|\\b${mainClassName}\\b`, 'g');
+            codeToSend = codeToSend.replace(classRegex, (match, str) => {
+              if (str) return str;
+              return 'Main';
+            });
+          }
+        }
+      }
+
+      // 2. Insert System.setIn shim right after opening brace of main()
+      codeToSend = codeToSend.replace(
+        /(public\s+static\s+void\s+main\s*\([^)]*\)\s*(?:throws\s+[^{]+)?\{)/,
+        '$1 System.setIn(new __TerminalEchoInputStream(System.in));'
+      );
+
+      // 3. Append helper class at END of file so line numbers do not shift
+      const javaHelper = `
+class __TerminalEchoInputStream extends java.io.InputStream {
+    private final java.io.InputStream in;
+    private byte[] lineBuf = new byte[8192];
+    private int lineLen = 0;
+    private int linePos = 0;
+
+    public __TerminalEchoInputStream(java.io.InputStream in) {
+        this.in = in;
+    }
+
+    @Override
+    public int read() throws java.io.IOException {
+        byte[] b = new byte[1];
+        int n = read(b, 0, 1);
+        return n <= 0 ? -1 : (b[0] & 0xff);
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws java.io.IOException {
+        if (len <= 0) return 0;
+        if (linePos >= lineLen) {
+            lineLen = 0;
+            linePos = 0;
+            while (lineLen < lineBuf.length) {
+                int c = in.read();
+                if (c == -1) break;
+                lineBuf[lineLen++] = (byte) c;
+                if (c == '\\n') break;
+            }
+            if (lineLen == 0) return -1;
+            System.out.write(lineBuf, 0, lineLen);
+            if (lineBuf[lineLen - 1] != '\\n') {
+                System.out.write('\\n');
+            }
+            System.out.flush();
+        }
+        int avail = lineLen - linePos;
+        int toCopy = Math.min(len, avail);
+        System.arraycopy(lineBuf, linePos, b, off, toCopy);
+        linePos += toCopy;
+        return toCopy;
+    }
+
+    @Override
+    public int available() {
+        return 0;
+    }
+}
+`;
+      codeToSend = codeToSend + '\n' + javaHelper;
     }
 
     // Base64 encode source code and stdin to ensure safe transfer across all charsets
@@ -173,8 +248,8 @@ __attribute__((constructor)) static void init_echo_stdin(void) {
       clearTimeout(timeout);
       const isAbort = (err as Error)?.name === 'AbortError';
       const msg = isAbort
-        ? 'Execution request timed out after 20 seconds. If the code is waiting for standard input, please ensure all required input is provided in the Custom Standard Input panel.'
-        : `Unable to connect to Judge0 execution API at ${apiUrl}. Please verify network connectivity or configure your execution API credentials in environment variables (JUDGE0_API_URL / JUDGE0_API_KEY).`;
+        ? 'Execution request timed out after 35 seconds. If the code is waiting for standard input, please ensure all required input is provided in the Custom Standard Input panel.'
+        : `Unable to connect to execution API at ${apiUrl}. Please verify network connectivity.`;
 
       return NextResponse.json(
         {
@@ -204,7 +279,7 @@ __attribute__((constructor)) static void init_echo_stdin(void) {
       const errorMessage =
         parsedErr.message ||
         parsedErr.error ||
-        `Judge0 service returned status ${response.status}: ${errText || response.statusText}`;
+        `Service returned status ${response.status}: ${errText || response.statusText}`;
 
       return NextResponse.json(
         {
@@ -222,9 +297,23 @@ __attribute__((constructor)) static void init_echo_stdin(void) {
 
     // Decode base64 outputs returned by Judge0
     const decodedStdout = decodeBase64(data.stdout);
-    const decodedStderr = decodeBase64(data.stderr);
-    const decodedCompileOutput = decodeBase64(data.compile_output);
+    let decodedStderr = decodeBase64(data.stderr);
+    let decodedCompileOutput = decodeBase64(data.compile_output);
     const decodedMessage = decodeBase64(data.message);
+
+    // Sanitize helper references from errors so helper is never revealed
+    if (decodedStderr && decodedStderr.includes('__TerminalEchoInputStream')) {
+      decodedStderr = decodedStderr
+        .split('\n')
+        .filter((l) => !l.includes('__TerminalEchoInputStream'))
+        .join('\n');
+    }
+    if (decodedCompileOutput && decodedCompileOutput.includes('__TerminalEchoInputStream')) {
+      decodedCompileOutput = decodedCompileOutput
+        .split('\n')
+        .filter((l) => !l.includes('__TerminalEchoInputStream'))
+        .join('\n');
+    }
 
     return NextResponse.json({
       stdout: decodedStdout,
@@ -235,7 +324,7 @@ __attribute__((constructor)) static void init_echo_stdin(void) {
       memory: data.memory || null,
       status: data.status || { id: 3, description: 'Accepted' },
       token: data.token || null,
-      engine: apiUrl.includes('rapidapi') ? 'Judge0 (RapidAPI)' : 'Judge0 CE'
+      engine: apiUrl.includes('rapidapi') ? 'Remote API (RapidAPI)' : 'Sandboxed Engine'
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown server error';
