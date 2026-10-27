@@ -12,11 +12,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "CountDemo.java",
         "code": "class Numbers {\n    int[] arr = {10, -5, 0, 8, -2, 15, 0};\n    void countNumbers() {\n        int positive = 0;\n        int negative = 0;\n        int zero = 0;\n        for (int i = 0; i < arr.length; i++) {\n            if (arr[i] > 0) {\n                positive++;\n            } else if (arr[i] < 0) {\n                negative++;\n            } else {\n                zero++;\n            }\n        }\n        System.out.println(\"Positive = \" + positive);\n        System.out.println(\"Negative = \" + negative);\n        System.out.println(\"Zero = \" + zero);\n    }\n}\n\npublic class CountDemo {\n    public static void main(String[] args) {\n        Numbers n = new Numbers();\n        n.countNumbers();\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "CountDemo.java",
     "sampleInput": "",
     "savedOutput": "Positive = 3\nNegative = 2\nZero = 2",
     "mode": "console"
@@ -28,11 +28,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "PrimeDemo.java",
         "code": "import java.util.Scanner;\n\nclass Prime {\n    int num;\n    void getData() {\n        Scanner sc = new Scanner(System.in);\n        System.out.print(\"Enter Number: \");\n        num = sc.nextInt();\n    }\n    void checkPrime() {\n        int count = 0;\n        for (int i = 1; i <= num; i++) {\n            if (num % i == 0)\n                count++;\n        }\n        if (count == 2)\n            System.out.println(\"Prime Number\");\n        else\n            System.out.println(\"Not Prime Number\");\n    }\n}\n\npublic class PrimeDemo {\n    public static void main(String args[]) {\n        Prime p = new Prime();\n        p.getData();\n        p.checkPrime();\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "PrimeDemo.java",
     "sampleInput": "7",
     "savedOutput": "Enter Number: 7\nPrime Number",
     "mode": "console"
@@ -44,11 +44,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "StudentDemo.java",
         "code": "class Student {\n    private int rollNo;\n    private String name;\n    private double marks;\n\n    public void setRollNo(int rollNo) {\n        this.rollNo = rollNo;\n    }\n    public int getRollNo() {\n        return rollNo;\n    }\n    public void setName(String name) {\n        this.name = name;\n    }\n    public String getName() {\n        return name;\n    }\n    public void setMarks(double marks) {\n        this.marks = marks;\n    }\n    public double getMarks() {\n        return marks;\n    }\n}\n\npublic class StudentDemo {\n    public static void main(String[] args) {\n        Student student = new Student();\n        student.setRollNo(101);\n        student.setName(\"Siddhant Surve\");\n        student.setMarks(9.0);\n        System.out.println(\"Roll No = \" + student.getRollNo());\n        System.out.println(\"Name = \" + student.getName());\n        System.out.println(\"Marks = \" + student.getMarks());\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "StudentDemo.java",
     "sampleInput": "",
     "savedOutput": "Roll No = 101\nName = Siddhant Surve\nMarks = 9.0",
     "mode": "console"
@@ -60,11 +60,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "MethodOverloading.java",
         "code": "class MethodOverloading {\n    void display() {\n        System.out.println(\"No parameters\");\n    }\n    void display(int a) {\n        System.out.println(\"Integer value: \" + a);\n    }\n    void display(int a, int b) {\n        System.out.println(\"Sum = \" + (a + b));\n    }\n    void display(String name) {\n        System.out.println(\"Name: \" + name);\n    }\n    public static void main(String[] args) {\n        MethodOverloading obj = new MethodOverloading();\n        obj.display();\n        obj.display(10);\n        obj.display(20, 30);\n        obj.display(\"SAM\");\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "MethodOverloading.java",
     "sampleInput": "",
     "savedOutput": "No parameters\nInteger value: 10\nSum = 50\nName: SAM",
     "mode": "console"
@@ -76,11 +76,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "Area.java",
         "code": "class Area {\n    Area() {\n        System.out.println(\"Default Constructor\");\n    }\n    Area(int side) {\n        System.out.println(\"Area of Square = \" + (side * side));\n    }\n    Area(int length, int breadth) {\n        System.out.println(\"Area of Rectangle = \" + (length * breadth));\n    }\n    public static void main(String[] args) {\n        new Area();\n        new Area(5);\n        new Area(10, 4);\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "Area.java",
     "sampleInput": "",
     "savedOutput": "Default Constructor\nArea of Square = 25\nArea of Rectangle = 40",
     "mode": "console"
@@ -92,11 +92,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "AbstractShape.java",
         "code": "import java.util.Scanner;\n\nabstract class Shape {\n    abstract void area();\n}\n\nclass Circle extends Shape {\n    double r;\n    Circle(double r) { this.r = r; }\n    void area() { System.out.println(\"Area of Circle = \" + (3.14 * r * r)); }\n}\n\nclass Rectangle extends Shape {\n    double l, w;\n    Rectangle(double l, double w) { this.l = l; this.w = w; }\n    void area() { System.out.println(\"Area of Rectangle = \" + (l * w)); }\n}\n\nclass Triangle extends Shape {\n    double b, h;\n    Triangle(double b, double h) { this.b = b; this.h = h; }\n    void area() { System.out.println(\"Area of Triangle = \" + (0.5 * b * h)); }\n}\n\nclass Square extends Shape {\n    double s;\n    Square(double s) { this.s = s; }\n    void area() { System.out.println(\"Area of Square = \" + (s * s)); }\n}\n\nclass AbstractShape {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        Shape s;\n        System.out.print(\"Enter Radius of Circle: \");\n        s = new Circle(sc.nextDouble());\n        s.area();\n        System.out.print(\"\\nEnter Length and Width of Rectangle: \");\n        s = new Rectangle(sc.nextDouble(), sc.nextDouble());\n        s.area();\n        System.out.print(\"\\nEnter Base and Height of Triangle: \");\n        s = new Triangle(sc.nextDouble(), sc.nextDouble());\n        s.area();\n        System.out.print(\"\\nEnter Side of Square: \");\n        s = new Square(sc.nextDouble());\n        s.area();\n        sc.close();\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "AbstractShape.java",
     "sampleInput": "5\n10 4\n8 6\n5",
     "savedOutput": "Enter Radius of Circle: 5\nArea of Circle = 78.5\n\nEnter Length and Width of Rectangle: 10 4\nArea of Rectangle = 40.0\n\nEnter Base and Height of Triangle: 8 6\nArea of Triangle = 24.0\n\nEnter Side of Square: 5\nArea of Square = 25.0",
     "mode": "console"
@@ -108,11 +108,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "MethodOverridingDemo.java",
         "code": "import java.util.Scanner;\n\n// Parent Class\nclass Bank {\n    void getInterestRate() {\n        System.out.println(\"Interest Rate: 5%\");\n    }\n}\n\n// Child Class 1\nclass SBI extends Bank {\n    @Override\n    void getInterestRate() {\n        System.out.println(\"SBI Interest Rate: 6.5%\");\n    }\n}\n\n// Child Class 2\nclass HDFC extends Bank {\n    @Override\n    void getInterestRate() {\n        System.out.println(\"HDFC Interest Rate: 7%\");\n    }\n}\n\n// Child Class 3\nclass ICICI extends Bank {\n    @Override\n    void getInterestRate() {\n        System.out.println(\"ICICI Interest Rate: 6.8%\");\n    }\n}\n\n// Main Class\npublic class MethodOverridingDemo {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        Bank bank;\n        char choiceAgain;\n        do {\n            System.out.println(\"\\n===== Bank Interest Rate System =====\");\n            System.out.println(\"1. SBI\");\n            System.out.println(\"2. HDFC\");\n            System.out.println(\"3. ICICI\");\n            System.out.print(\"Enter your choice: \");\n            int choice = sc.nextInt();\n            switch (choice) {\n                case 1:\n                    bank = new SBI();\n                    break;\n                case 2:\n                    bank = new HDFC();\n                    break;\n                case 3:\n                    bank = new ICICI();\n                    break;\n                default:\n                    bank = new Bank();\n                    System.out.println(\"Invalid choice! Displaying default interest rate.\");\n            }\n            // Runtime Polymorphism\n            bank.getInterestRate();\n            System.out.print(\"\\nDo you want to check another bank's interest rate? (Y/N): \");\n            choiceAgain = sc.next().charAt(0);\n        } while (choiceAgain == 'Y' || choiceAgain == 'y');\n        System.out.println(\"\\nThank you for using the Bank Interest Rate System!\");\n        sc.close();\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "MethodOverridingDemo.java",
     "sampleInput": "1\nn",
     "savedOutput": "===== Bank Interest Rate System =====\n1. SBI\n2. HDFC\n3. ICICI\nEnter your choice: 1\nSBI Interest Rate: 6.5%\n\nDo you want to check another bank's interest rate? (Y/N): n\n\nThank you for using the Bank Interest Rate System!",
     "mode": "console"
@@ -124,11 +124,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "PersonDemo.java",
         "code": "class Person {\n    void displayDetails() {\n        System.out.println(\"I am a Person.\");\n    }\n}\n\nclass Student extends Person {\n    @Override\n    void displayDetails() {\n        System.out.println(\"I am a Student.\");\n    }\n}\n\nclass Teacher extends Person {\n    @Override\n    void displayDetails() {\n        System.out.println(\"I am a Teacher.\");\n    }\n}\n\npublic class PersonDemo {\n    public static void main(String[] args) {\n        Person person;\n        // Student object\n        person = new Student();\n        person.displayDetails();\n        // Teacher object\n        person = new Teacher();\n        person.displayDetails();\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "PersonDemo.java",
     "sampleInput": "",
     "savedOutput": "I am a Student.\nI am a Teacher.",
     "mode": "console"
@@ -140,11 +140,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "MethodOverriding.java",
         "code": "class Animal {\n    public void eat() {\n        System.out.println(\"Animal eats\");\n    }\n}\n\nclass Dog extends Animal {\n    @Override\n    public void eat() {\n        System.out.println(\"Dog eats\");\n    }\n}\n\npublic class MethodOverriding {\n    public static void main(String[] args) {\n        Animal a = new Animal();\n        a.eat();\n        Dog d = new Dog();\n        d.eat();\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "MethodOverriding.java",
     "sampleInput": "",
     "savedOutput": "Animal eats\nDog eats",
     "mode": "console"
@@ -156,11 +156,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "AllInheritance.java",
         "code": "class Animal {\n    void eat() {\n        System.out.println(\"Animal eats\");\n    }\n}\n\nclass Dog extends Animal {\n    void bark() {\n        System.out.println(\"Dog barks\");\n    }\n}\n\nclass Puppy extends Dog {\n    void play() {\n        System.out.println(\"Puppy plays\");\n    }\n}\n\nclass Cat extends Animal {\n    void meow() {\n        System.out.println(\"Cat meows\");\n    }\n}\n\ninterface Pet {\n    void petSound();\n}\n\ninterface Friendly {\n    void friendly();\n}\n\nclass Cow extends Animal implements Pet, Friendly {\n    public void petSound() {\n        System.out.println(\"Cow says Moo\");\n    }\n    public void friendly() {\n        System.out.println(\"Cow is friendly\");\n    }\n}\n\npublic class AllInheritance {\n    public static void main(String[] args) {\n        System.out.println(\"----- Single Inheritance -----\");\n        Dog d = new Dog();\n        d.eat();\n        d.bark();\n        System.out.println(\"\\n----- Multilevel Inheritance -----\");\n        Puppy p = new Puppy();\n        p.eat();\n        p.bark();\n        p.play();\n        System.out.println(\"\\n----- Hierarchical Inheritance -----\");\n        Cat c = new Cat();\n        c.eat();\n        c.meow();\n        System.out.println(\"\\n----- Multiple Inheritance -----\");\n        Cow cow = new Cow();\n        cow.petSound();\n        cow.friendly();\n        System.out.println(\"\\n----- Hybrid Inheritance -----\");\n        cow.eat();\n        cow.petSound();\n        cow.friendly();\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "AllInheritance.java",
     "sampleInput": "",
     "savedOutput": "----- Single Inheritance -----\nAnimal eats\nDog barks\n\n----- Multilevel Inheritance -----\nAnimal eats\nDog barks\nPuppy plays\n\n----- Hierarchical Inheritance -----\nAnimal eats\nCat meows\n\n----- Multiple Inheritance -----\nCow says Moo\nCow is friendly\n\n----- Hybrid Inheritance -----\nAnimal eats\nCow says Moo\nCow is friendly",
     "mode": "console"
@@ -172,11 +172,11 @@ export const java: Subject = {
     "language": "java",
     "files": [
       {
-        "name": "Main.java",
+        "name": "AllExceptionHandling.java",
         "code": "import java.util.Scanner;\n\nclass AgeException extends Exception {\n    AgeException(String msg) {\n        super(msg);\n    }\n}\n\npublic class AllExceptionHandling {\n    static void checkAge(int age) throws AgeException {\n        if (age < 18) {\n            throw new AgeException(\"Age must be 18 or above\");\n        }\n        System.out.println(\"Eligible for voting\");\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Try-Catch\n        try {\n            System.out.print(\"Enter a number: \");\n            int n = sc.nextInt();\n            System.out.println(\"10 / n = \" + (10 / n));\n            int a[] = {10, 20, 30};\n            System.out.println(\"Array value = \" + a[n]);\n        }\n        catch (ArithmeticException e) {\n            System.out.println(\"Cannot divide by zero\");\n        }\n        catch (ArrayIndexOutOfBoundsException e) {\n            System.out.println(\"Invalid array index\");\n        }\n        catch (Exception e) {\n            System.out.println(\"Some other error occurred\");\n        }\n\n        // Nested Try-Catch\n        try {\n            System.out.println(\"\\nNested Try Example\");\n            try {\n                int x = 10 / 0;\n            } catch (ArithmeticException e) {\n                System.out.println(\"Inner Catch: Division by zero\");\n            }\n            int arr[] = {1, 2, 3};\n            System.out.println(arr[5]);\n        } catch (ArrayIndexOutOfBoundsException e) {\n            System.out.println(\"Outer Catch: Invalid array index\");\n        }\n\n        // User Defined Exception\n        try {\n            System.out.print(\"\\nEnter your age: \");\n            int age = sc.nextInt();\n            checkAge(age);\n        } catch (AgeException e) {\n            System.out.println(\"User Defined Exception: \" + e.getMessage());\n        }\n\n        // Finally\n        try {\n            System.out.println(\"\\nFinally Example\");\n            System.out.println(\"Program is running...\");\n        } finally {\n            System.out.println(\"Finally block always executes\");\n        }\n\n        sc.close();\n        System.out.println(\"\\nProgram completed successfully.\");\n    }\n}"
       }
     ],
-    "mainFile": "Main.java",
+    "mainFile": "AllExceptionHandling.java",
     "sampleInput": "2\n18",
     "savedOutput": "Enter a number: 2\n10 / n = 5\nArray value = 30\n\nNested Try Example\nInner Catch: Division by zero\nOuter Catch: Invalid array index\n\nEnter your age: 18\nEligible for voting\n\nFinally Example\nProgram is running...\nFinally block always executes\n\nProgram completed successfully.",
     "mode": "console"
