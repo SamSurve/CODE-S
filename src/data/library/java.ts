@@ -212,30 +212,6 @@ export const java: Subject = {
   {
     "id": "j13",
     "expNo": "7.1",
-    "title": "Static Website using HTML, CSS and JavaScript (Student Profile)",
-    "language": "html",
-    "files": [
-      {
-        "name": "index.html",
-        "code": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Student Profile</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <h1>Student Profile</h1>\n    </header>\n    <main>\n        <p><b>Name:</b> Siddhant Surve</p>\n        <p>This page demonstrates text formatting, an image, a link and lists.</p>\n        \n        <img src=\"student.jpg\" alt=\"Student Image\" width=\"160\" onerror=\"this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 160 160\\' width=\\'160\\' height=\\'160\\'><rect width=\\'160\\' height=\\'160\\' fill=\\'%23e2e8f0\\' rx=\\'10\\'/><circle cx=\\'80\\' cy=\\'55\\' r=\\'30\\' fill=\\'%233b82f6\\'/><path d=\\'M 30 135 C 30 95, 130 95, 130 135 Z\\' fill=\\'%233b82f6\\'/><text x=\\'80\\' y=\\'150\\' font-family=\\'Arial\\' font-size=\\'12\\' text-anchor=\\'middle\\' fill=\\'%23475569\\'>Siddhant Surve</text></svg>'\">\n\n        <p><a href=\"https://www.google.com\" target=\"_blank\">Visit Google</a></p>\n\n        <h3>Skills</h3>\n        <ul>\n            <li>Java</li>\n            <li>HTML &amp; CSS</li>\n            <li>JavaScript</li>\n        </ul>\n\n        <h3>Steps</h3>\n        <ol>\n            <li>Learn</li>\n            <li>Practice</li>\n            <li>Build</li>\n        </ol>\n\n        <button onclick=\"showMessage()\">Click Me</button>\n    </main>\n    <script src=\"script.js\"></script>\n</body>\n</html>\n"
-      },
-      {
-        "name": "style.css",
-        "code": "/* style.css for EXP-07 */\nbody {\n    font-family: Arial, sans-serif;\n    margin: 30px;\n    background-color: #fdfdfd;\n    color: #333333;\n}\n\nheader {\n    padding: 10px;\n    text-align: center;\n    border-bottom: 2px solid #e0e0e0;\n    margin-bottom: 20px;\n}\n\nimg {\n    border-radius: 8px;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);\n    display: block;\n    margin: 15px 0;\n}\n\nul, ol {\n    margin-bottom: 15px;\n    padding-left: 25px;\n}\n\nli {\n    margin-bottom: 5px;\n}\n\nbutton {\n    padding: 10px 20px;\n    font-size: 15px;\n    background-color: #007bff;\n    color: white;\n    border: none;\n    border-radius: 5px;\n    cursor: pointer;\n    margin-top: 10px;\n    transition: background-color 0.2s;\n}\n\nbutton:hover {\n    background-color: #0056b3;\n}\n\na {\n    color: #0066cc;\n    text-decoration: none;\n}\n\na:hover {\n    text-decoration: underline;\n}\n"
-      },
-      {
-        "name": "script.js",
-        "code": "// script.js for EXP-07\nfunction showMessage() {\n    alert(\"Welcome to the Student Profile!\");\n}\n"
-      }
-    ],
-    "mainFile": "index.html",
-    "sampleInput": "",
-    "savedOutput": "[Web Preview Rendered]\nHeader: Student Profile\nName: Siddhant Surve\nSkills: Java, HTML & CSS, JavaScript\nSteps: 1. Learn, 2. Practice, 3. Build\nAction: Click button triggers alert(\"Welcome to the Student Profile!\")",
-    "mode": "web"
-  },
-  {
-    "id": "j14",
-    "expNo": "7.2",
     "title": "Static Website using HTML, CSS and JavaScript (MyWebsite)",
     "language": "html",
     "files": [
@@ -255,6 +231,30 @@ export const java: Subject = {
     "mainFile": "index.html",
     "sampleInput": "",
     "savedOutput": "[Web Preview Rendered]\nHeader: MyWebsite\nHero: Welcome to My Website\nSections: About Us, Our Services (Design, Development, Support)\nForm: Contact Us (Name, Email, Message)\nActions: \"Click Here\" alert & \"Submit\" form alert",
+    "mode": "web"
+  },
+  {
+    "id": "j14",
+    "expNo": "7.2",
+    "title": "Static Website using HTML, CSS and JavaScript (Student Profile)",
+    "language": "html",
+    "files": [
+      {
+        "name": "index.html",
+        "code": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Student Profile</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <h1>Student Profile</h1>\n    </header>\n    <main>\n        <p><b>Name:</b> Siddhant Surve</p>\n        <p>This page demonstrates text formatting, an image, a link and lists.</p>\n        \n        <img src=\"student.jpg\" alt=\"Student Image\" width=\"160\" onerror=\"this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 160 160\\' width=\\'160\\' height=\\'160\\'><rect width=\\'160\\' height=\\'160\\' fill=\\'%23e2e8f0\\' rx=\\'10\\'/><circle cx=\\'80\\' cy=\\'55\\' r=\\'30\\' fill=\\'%233b82f6\\'/><path d=\\'M 30 135 C 30 95, 130 95, 130 135 Z\\' fill=\\'%233b82f6\\'/><text x=\\'80\\' y=\\'150\\' font-family=\\'Arial\\' font-size=\\'12\\' text-anchor=\\'middle\\' fill=\\'%23475569\\'>Siddhant Surve</text></svg>'\">\n\n        <p><a href=\"https://www.google.com\" target=\"_blank\">Visit Google</a></p>\n\n        <h3>Skills</h3>\n        <ul>\n            <li>Java</li>\n            <li>HTML &amp; CSS</li>\n            <li>JavaScript</li>\n        </ul>\n\n        <h3>Steps</h3>\n        <ol>\n            <li>Learn</li>\n            <li>Practice</li>\n            <li>Build</li>\n        </ol>\n\n        <button onclick=\"showMessage()\">Click Me</button>\n    </main>\n    <script src=\"script.js\"></script>\n</body>\n</html>\n"
+      },
+      {
+        "name": "style.css",
+        "code": "/* style.css for EXP-07 */\nbody {\n    font-family: Arial, sans-serif;\n    margin: 30px;\n    background-color: #fdfdfd;\n    color: #333333;\n}\n\nheader {\n    padding: 10px;\n    text-align: center;\n    border-bottom: 2px solid #e0e0e0;\n    margin-bottom: 20px;\n}\n\nimg {\n    border-radius: 8px;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);\n    display: block;\n    margin: 15px 0;\n}\n\nul, ol {\n    margin-bottom: 15px;\n    padding-left: 25px;\n}\n\nli {\n    margin-bottom: 5px;\n}\n\nbutton {\n    padding: 10px 20px;\n    font-size: 15px;\n    background-color: #007bff;\n    color: white;\n    border: none;\n    border-radius: 5px;\n    cursor: pointer;\n    margin-top: 10px;\n    transition: background-color 0.2s;\n}\n\nbutton:hover {\n    background-color: #0056b3;\n}\n\na {\n    color: #0066cc;\n    text-decoration: none;\n}\n\na:hover {\n    text-decoration: underline;\n}\n"
+      },
+      {
+        "name": "script.js",
+        "code": "// script.js for EXP-07\nfunction showMessage() {\n    alert(\"Welcome to the Student Profile!\");\n}\n"
+      }
+    ],
+    "mainFile": "index.html",
+    "sampleInput": "",
+    "savedOutput": "[Web Preview Rendered]\nHeader: Student Profile\nName: Siddhant Surve\nSkills: Java, HTML & CSS, JavaScript\nSteps: 1. Learn, 2. Practice, 3. Build\nAction: Click button triggers alert(\"Welcome to the Student Profile!\")",
     "mode": "web"
   },
   {
