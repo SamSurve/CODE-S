@@ -1,0 +1,63 @@
+EXP — Booth Multiplication
+; EXP : Booth Multiplication
+
+org 100h
+mov dx,msg1
+mov ah,09h
+int 21h
+mov ah,01h
+int 21h
+sub al,30h
+mov bl,al          ; M
+mov dx,msg2
+mov ah,09h
+int 21h
+mov ah,01h
+int 21h
+sub al,30h
+mov dh,al          ; Q
+mov bh,0           ; A
+mov ch,0           ; Q-1
+mov cl,8
+
+L1: mov al,dh
+    and al,1       ; Q0
+    cmp al,ch
+    je SH          ; 00 or 11: no change
+    cmp al,1
+    je SB          ; 10: A = A - M
+    add bh,bl      ; 01: A = A + M
+    jmp SH
+SB: sub bh,bl
+SH: mov ch,al      ; Q-1 = Q0
+    sar bh,1       ; shift A, CF = A0
+    rcr dh,1       ; shift Q, A0 goes in
+    loop L1
+
+mov al,dh
+mov ah,0
+mov bl,10
+div bl
+mov bx,ax          ; BL = tens, BH = ones
+mov dx,res
+mov ah,09h
+int 21h
+add bl,30h
+mov dl,bl
+mov ah,02h
+int 21h
+add bh,30h
+mov dl,bh
+mov ah,02h
+int 21h
+hlt
+
+msg1 db 'Enter Multiplicand: $'
+msg2 db 13,10,'Enter Multiplier: $'
+res  db 13,10,'Booth Result = $'
+
+OUTPUT:
+Enter Multiplicand: 6
+Enter Multiplier: 7
+Booth Result = 42
+[CPU Halted (HLT)]

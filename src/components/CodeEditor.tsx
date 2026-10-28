@@ -55,7 +55,7 @@ function highlightSyntax(code: string): string {
   if (!code) return '';
 
   const regex =
-    /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|<!--[\s\S]*?-->)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`[\s\S]*?`)|(#\s*[a-zA-Z_]\w*(?:\s*<[^>]+>|\s*"(?:\\.|[^"\\])*")?)|(\b(?:int|char|void|float|double|long|short|unsigned|signed|const|static|typedef|struct|sizeof|Node|bool|auto|public|private|protected|class|interface|extends|implements|new|import|package|abstract|final|super|this|throws|throw|try|catch|finally|boolean|byte|null|true|false|let|var|const|function|return|if|else|for|while|do|break|continue|switch|case|default|enum|typeof|instanceof)\b)|(@[a-zA-Z_]\w*)|(\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?[fFulL]*\b)|(\b[a-zA-Z_]\w*\s*(?=\())|(\b[a-zA-Z_]\w*\b)|([{}()[\];,.<>+\-*\/%&|^!=?:~]+)/g;
+    /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|<!--[\s\S]*?-->|;[^\n]*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`[\s\S]*?`)|(#\s*[a-zA-Z_]\w*(?:\s*<[^>]+>|\s*"(?:\\.|[^"\\])*")?)|(\b(?:int|char|void|float|double|long|short|unsigned|signed|const|static|typedef|struct|sizeof|Node|bool|auto|public|private|protected|class|interface|extends|implements|new|import|package|abstract|final|super|this|throws|throw|try|catch|finally|boolean|byte|null|true|false|let|var|const|function|return|if|else|for|while|do|break|continue|switch|case|default|enum|typeof|instanceof)\b)|(@[a-zA-Z_]\w*)|(\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?[fFulL]*\b)|(\b[a-zA-Z_]\w*\s*(?=\())|(\b[a-zA-Z_]\w*\b)|([{}()[\];,.<>+\-*\/%&|^!=?:~]+)/g;
 
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -246,6 +246,7 @@ export default function CodeEditor({
     else if (language === 'java') extension = 'java';
     else if (language === 'html') extension = 'html';
     else if (language === 'javascript') extension = 'js';
+    else if (language === 'asm') extension = 'asm';
 
     const defaultName = currentFile?.name || (language === 'java' ? 'Main.java' : `main.${extension}`);
     const blob = new Blob([activeCode], { type: 'text/plain;charset=utf-8' });
@@ -283,6 +284,8 @@ export default function CodeEditor({
         return 'index.html';
       case 'javascript':
         return 'main.js';
+      case 'asm':
+        return 'main.asm';
       default:
         return 'main.c';
     }
@@ -341,6 +344,9 @@ export default function CodeEditor({
               </option>
               <option value="javascript" className="bg-zinc-900 text-zinc-200">
                 JavaScript
+              </option>
+              <option value="asm" className="bg-zinc-900 text-zinc-200">
+                Assembly (8086)
               </option>
             </select>
           </div>

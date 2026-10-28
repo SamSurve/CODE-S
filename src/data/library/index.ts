@@ -1,7 +1,7 @@
 import { Subject } from './types';
 import { aoa } from './aoa';
-import { java } from './java';
+import { coa } from './coa';
 
-export const LIBRARY: Subject[] = [aoa, java];
+export const LIBRARY: Subject[] = [aoa, coa];
 
 export * from './types';

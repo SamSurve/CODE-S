@@ -14,6 +14,7 @@ export const HOTSPOT: HotspotConfig = {
 
 export const SUBJECT_NAMES = {
   aoa: 'AOA',
+  coa: 'COA',
   java: 'Java'
 } as const;
 

@@ -57,6 +57,16 @@ int main() {
     fileName: 'main.js',
     code: `console.log("Hello, World!");
 `
+  },
+  asm: {
+    fileName: 'main.asm',
+    code: `; 8086 Assembly
+org 100h
+
+; write your code here
+
+hlt
+`
   }
 };
 
@@ -264,6 +274,7 @@ export default function CompilerPage() {
     else if (name.endsWith('.c')) detectedLang = 'c';
     else if (name.endsWith('.html')) detectedLang = 'html';
     else if (name.endsWith('.js')) detectedLang = 'javascript';
+    else if (name.endsWith('.asm') || name.endsWith('.s')) detectedLang = 'asm';
 
     setLanguage(detectedLang);
     setFiles([{ name, code }]);

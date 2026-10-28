@@ -1,4 +1,4 @@
-export type SupportedLanguage = 'c' | 'cpp' | 'java' | 'html' | 'javascript';
+export type SupportedLanguage = 'c' | 'cpp' | 'java' | 'html' | 'javascript' | 'asm';
 
 export interface ExecutionRequest {
   source_code: string;

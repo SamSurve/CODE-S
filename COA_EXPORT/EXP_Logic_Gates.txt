@@ -1,0 +1,34 @@
+EXP — Logic Gates
+; EXP : Logic Gates
+org 100h
+mov al, 4bh
+mov bl, 15h
+mov ah, al
+and ah, bl
+mov [0200h], ah  ; AND
+mov ah, al
+or ah, bl
+mov [0201h], ah  ; OR
+mov ah, al
+xor ah, bl
+mov [0202h], ah  ; XOR
+mov ah, al
+not ah
+mov [0203h], ah  ; NOT
+mov ah, [0200h]
+not ah
+mov [0204h], ah  ; NAND
+mov ah, [0201h]
+not ah
+mov [0205h], ah  ; NOR
+mov ah, [0202h]
+not ah
+mov [0206h], ah  ; XNOR
+lea dx, msg
+mov ah, 09h
+int 21h
+hlt
+msg db 'All 7 Logic Gates Executed $'
+
+OUTPUT:
+All 7 Logic Gates Executed

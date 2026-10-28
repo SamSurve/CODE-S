@@ -171,7 +171,7 @@ export default function HiddenHotspotMenu({ onSelectItem }: HiddenHotspotMenuPro
     const expNumQuery = query.replace(/^exp-?/, '');
     return items.filter(
       (it) =>
-        it.expNo.toLowerCase().includes(expNumQuery) ||
+        (it.expNo ? it.expNo.toLowerCase().includes(expNumQuery) : false) ||
         (it.title && it.title.toLowerCase().includes(query))
     );
   }, [items, search]);
@@ -227,11 +227,11 @@ export default function HiddenHotspotMenu({ onSelectItem }: HiddenHotspotMenuPro
               </button>
               <button
                 type="button"
-                onClick={() => handleSelectSubject('java')}
+                onClick={() => handleSelectSubject('coa')}
                 className="w-full py-2.5 px-3 bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-lg text-xs font-semibold text-zinc-200 text-left transition-colors flex items-center justify-between"
               >
-                <span>{SUBJECT_NAMES.java}</span>
-                <span className="text-[11px] text-zinc-500 font-mono">18</span>
+                <span>{SUBJECT_NAMES.coa}</span>
+                <span className="text-[11px] text-zinc-500 font-mono">4</span>
               </button>
             </div>
           )}
@@ -269,10 +269,10 @@ export default function HiddenHotspotMenu({ onSelectItem }: HiddenHotspotMenuPro
                     className="w-full p-2 bg-zinc-950/80 hover:bg-zinc-800 active:bg-zinc-750 border border-zinc-800/80 hover:border-zinc-700 rounded-lg text-left transition-all duration-150 flex items-start gap-2.5 group"
                   >
                     <span className="shrink-0 px-2 py-0.5 bg-zinc-800/90 group-hover:bg-zinc-700 border border-zinc-700/60 rounded font-mono text-[11px] font-semibold text-zinc-300 group-hover:text-white transition-colors">
-                      EXP-{it.expNo}
+                      {it.expNo ? `EXP-${it.expNo}` : 'EXP'}
                     </span>
                     <span className="text-xs font-medium text-zinc-300 group-hover:text-zinc-100 transition-colors leading-snug break-words pt-0.5">
-                      {it.title || `EXP-${it.expNo}`}
+                      {it.expNo ? it.title : `— ${it.title}`}
                     </span>
                   </button>
                 ))}

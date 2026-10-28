@@ -36,8 +36,10 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded, onUpload }:
       detectedLang = 'html';
     } else if (name.endsWith('.js') || name.endsWith('.jsx')) {
       detectedLang = 'javascript';
+    } else if (name.endsWith('.asm') || name.endsWith('.s')) {
+      detectedLang = 'asm';
     } else {
-      setError('Please upload a supported code file (.c, .cpp, .java, .html, .js).');
+      setError('Please upload a supported code file (.c, .cpp, .java, .html, .js, .asm).');
       return;
     }
 
@@ -127,7 +129,7 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded, onUpload }:
             <input
               ref={fileInputRef}
               type="file"
-              accept=".c,.cpp,.cc,.cxx,.h,.java,.html,.js"
+              accept=".c,.cpp,.cc,.cxx,.h,.java,.html,.js,.asm,.s"
               className="hidden"
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
@@ -144,7 +146,7 @@ export default function UploadModal({ isOpen, onClose, onCodeLoaded, onUpload }:
                   Click to select or drag and drop a source file
                 </p>
                 <p className="text-xs text-zinc-500 mt-1">
-                  Supported formats: C, C++, Java, HTML, JS (up to 512 KB)
+                  Supported formats: C, C++, Java, HTML, JS, ASM (up to 512 KB)
                 </p>
               </div>
             </div>
