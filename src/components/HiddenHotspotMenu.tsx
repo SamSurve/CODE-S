@@ -227,6 +227,14 @@ export default function HiddenHotspotMenu({ onSelectItem }: HiddenHotspotMenuPro
               </button>
               <button
                 type="button"
+                onClick={() => handleSelectSubject('aoa_shorted')}
+                className="w-full py-2.5 px-3 bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-lg text-xs font-semibold text-zinc-200 text-left transition-colors flex items-center justify-between"
+              >
+                <span>{SUBJECT_NAMES.aoa_shorted}</span>
+                <span className="text-[11px] text-zinc-500 font-mono">11</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => handleSelectSubject('coa')}
                 className="w-full py-2.5 px-3 bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-lg text-xs font-semibold text-zinc-200 text-left transition-colors flex items-center justify-between"
               >
